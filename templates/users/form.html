@@ -1,0 +1,394 @@
+{% extends "base.html" %}
+
+{% block title %}{% if editing %}Editar{% else %}Nuevo{% endif %} usuario — {{ company.name }}{% endblock %}
+{% block page_title %}{% if editing %}Editar usuario{% else %}Nuevo usuario{% endif %}{% endblock %}
+
+{% block extra_css %}
+<style>
+  .card-section {
+    background: white;
+    border-radius: 14px;
+    border: 1px solid #f1f5f9;
+    padding: 24px;
+  }
+
+  .section-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .form-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #475569;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .form-control {
+    border: 1.5px solid #e8edf2;
+    border-radius: 10px;
+    padding: 9px 13px;
+    font-size: 14px;
+    font-family: 'Outfit', sans-serif;
+    color: #1e293b;
+    transition: border-color .2s, box-shadow .2s;
+    width: 100%;
+    background: white;
+  }
+
+  .form-control:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 12%, transparent);
+    outline: none;
+  }
+
+  .form-control::placeholder { color: #c8d0da; }
+
+  .perm-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    padding: 13px 16px;
+    border: 1.5px solid #e8edf2;
+    border-radius: 10px;
+    transition: border-color .2s, background .2s;
+  }
+
+  .perm-label:hover {
+    border-color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 4%, white);
+  }
+
+  .perm-label:has(input:checked) {
+    border-color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 5%, white);
+  }
+
+  .perm-label input[type="checkbox"] {
+    width: 16px; height: 16px;
+    accent-color: var(--color-primary);
+    flex-shrink: 0;
+  }
+
+  /* Avatar grande */
+  .avatar-circle {
+    width: 100px; height: 100px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--color-primary) 10%, white);
+    border: 3px solid color-mix(in srgb, var(--color-primary) 20%, white);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    margin: 0 auto 16px;
+    position: relative;
+    cursor: pointer;
+    transition: border-color .2s;
+  }
+
+  .avatar-circle:hover { border-color: var(--color-primary); }
+
+  .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+
+  .avatar-overlay {
+    position: absolute; inset: 0;
+    background: rgba(0,0,0,0.35);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    transition: opacity .2s;
+    border-radius: 50%;
+  }
+
+  .avatar-circle:hover .avatar-overlay { opacity: 1; }
+
+  .btn-primary-action {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 20px;
+    background: var(--color-primary);
+    color: white; border: none; border-radius: 10px;
+    font-size: 14px; font-weight: 600;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer; text-decoration: none;
+    transition: opacity .2s, transform .15s;
+  }
+
+  .btn-primary-action:hover { opacity: .88; transform: translateY(-1px); color: white; }
+
+  .btn-secondary-action {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 20px;
+    background: #f1f5f9; color: #475569;
+    border: none; border-radius: 10px;
+    font-size: 14px; font-weight: 600;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer; text-decoration: none;
+    transition: background .2s;
+  }
+
+  .btn-secondary-action:hover { background: #e2e8f0; color: #334155; }
+
+  .btn-danger-action {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 20px;
+    background: #fff5f5; color: #dc2626;
+    border: 1.5px solid #fecaca; border-radius: 10px;
+    font-size: 14px; font-weight: 600;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+    transition: background .2s;
+  }
+
+  .btn-danger-action:hover { background: #fee2e2; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+  <div>
+    <p style="font-size:13px; color:#94a3b8; margin:0;">
+      {% if editing %}Modifica los datos del usuario{% else %}Completa los campos para crear un acceso{% endif %}
+    </p>
+  </div>
+  <a href="{% url 'company:users_list' %}" class="btn-secondary-action">
+    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+      <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+    </svg>
+    Volver
+  </a>
+</div>
+
+<form method="POST" enctype="multipart/form-data">
+  {% csrf_token %}
+
+  <div class="row g-4 align-items-start">
+
+    <!-- ── COLUMNA IZQUIERDA — foto + permisos ── -->
+    <div class="col-lg-3 d-flex flex-column gap-4">
+
+      <!-- Foto de perfil -->
+      <div class="card-section text-center">
+        <div class="section-title" style="text-align:left;">Foto de perfil</div>
+
+        <label for="photo-input" style="cursor:pointer; display:block;">
+          <div class="avatar-circle" id="photo-preview">
+            {% if editing and edit_user.profile_photo %}
+              <img src="{{ edit_user.profile_photo.url }}" alt="">
+            {% else %}
+              <svg width="36" height="36" fill="none" viewBox="0 0 24 24"
+                   stroke="var(--color-primary)" stroke-width="1.2" opacity=".6">
+                <circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0"/>
+              </svg>
+            {% endif %}
+            <div class="avatar-overlay">
+              <svg width="22" height="22" fill="none" viewBox="0 0 24 24"
+                   stroke="white" stroke-width="2">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+            </div>
+          </div>
+          <input type="file" name="profile_photo" id="photo-input" accept="image/*" style="display:none;">
+          <div style="font-size:12px; color:#94a3b8; margin-top:4px;">Haz clic para cambiar</div>
+          <div style="font-size:11px; color:#cbd5e1; margin-top:2px;">PNG o JPG, máx. 2MB</div>
+        </label>
+
+        {% if editing %}
+          <div style="margin-top:16px; padding-top:16px; border-top:1px solid #f1f5f9;">
+            <div style="font-size:13px; font-weight:600; color:#1e293b; margin-bottom:2px;">
+              {{ edit_user.get_full_name|default:edit_user.username }}
+            </div>
+            <div style="font-size:12px; color:#94a3b8;">
+              @{{ edit_user.username }}
+            </div>
+            <div style="margin-top:8px;">
+              {% if edit_user.is_active %}
+                <span style="display:inline-flex; align-items:center; gap:5px; padding:3px 10px;
+                             border-radius:999px; background:#f0fdf4; color:#15803d; font-size:12px; font-weight:500;">
+                  <span style="width:6px;height:6px;border-radius:50%;background:#16a34a;display:inline-block;"></span>
+                  Activo
+                </span>
+              {% else %}
+                <span style="display:inline-flex; align-items:center; gap:5px; padding:3px 10px;
+                             border-radius:999px; background:#f8fafc; color:#94a3b8; font-size:12px; font-weight:500;">
+                  <span style="width:6px;height:6px;border-radius:50%;background:#94a3b8;display:inline-block;"></span>
+                  Inactivo
+                </span>
+              {% endif %}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Permisos -->
+      <div class="card-section">
+        <div class="section-title">Permisos</div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <label class="perm-label">
+            <input type="checkbox" name="is_active" value="1"
+                   {% if edit_user.is_active|default:True %}checked{% endif %}>
+            <div>
+              <div style="font-size:13px; font-weight:500; color:#1e293b;">Cuenta activa</div>
+              <div style="font-size:11px; color:#94a3b8;">Puede iniciar sesión</div>
+            </div>
+          </label>
+          <label class="perm-label">
+            <input type="checkbox" name="is_superuser" value="1"
+                   {% if edit_user.is_superuser %}checked{% endif %}>
+            <div>
+              <div style="font-size:13px; font-weight:500; color:#1e293b;">Administrador</div>
+              <div style="font-size:11px; color:#94a3b8;">Acceso total</div>
+            </div>
+          </label>
+          <label class="perm-label">
+            <input type="checkbox" name="is_operador" value="1"
+                    {% if edit_user.is_operador %}checked{% endif %}>
+            <div>
+                <div style="font-size:13px; font-weight:500;">Operador</div>
+                <div style="font-size:11px; color:#94a3b8;">Solo Dashboard, Cursos y WhatsApp</div>
+            </div>
+         </label>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── COLUMNA DERECHA — datos + acciones ── -->
+    <div class="col-lg-9 d-flex flex-column gap-4">
+
+      <!-- Datos personales -->
+      <div class="card-section">
+        <div class="section-title">Datos personales</div>
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <label class="form-label">Nombre</label>
+            <input type="text" name="first_name" class="form-control"
+                   value="{{ edit_user.first_name|default:'' }}" placeholder="Juan">
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label">Apellido</label>
+            <input type="text" name="last_name" class="form-control"
+                   value="{{ edit_user.last_name|default:'' }}" placeholder="García">
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label">Teléfono</label>
+            <input type="text" name="phone" class="form-control"
+                   value="{{ edit_user.phone|default:'' }}" placeholder="+52 55 0000 0000">
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label">Correo electrónico</label>
+            <input type="email" name="email" class="form-control"
+                   value="{{ edit_user.email|default:'' }}" placeholder="usuario@empresa.com">
+          </div>
+        </div>
+      </div>
+
+      <!-- Acceso al sistema -->
+      <div class="card-section">
+        <div class="section-title">Acceso al sistema</div>
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <label class="form-label">Nombre de usuario</label>
+            <input type="text" name="username" class="form-control"
+                   value="{{ edit_user.username|default:'' }}" placeholder="juangarcia" required>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label">
+              {% if editing %}
+                Nueva contraseña
+                <span style="font-weight:400; color:#94a3b8; font-size:11px;">(vacío = no cambiar)</span>
+              {% else %}
+                Contraseña
+              {% endif %}
+            </label>
+            <input type="password" name="password" class="form-control"
+                   placeholder="••••••••" {% if not editing %}required{% endif %}>
+          </div>
+        </div>
+      </div>
+
+      <!-- Acciones -->
+      <div style="display:flex; align-items:center; gap:10px; justify-content:flex-end; flex-wrap:wrap;">
+        {% if editing %}
+          <button type="button" onclick="confirmDelete()" class="btn-danger-action" style="margin-right:auto;">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+              <path d="M10 11v6"/><path d="M14 11v6"/>
+              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+            </svg>
+            Eliminar usuario
+          </button>
+        {% endif %}
+
+        <a href="{% url 'company:users_list' %}" class="btn-secondary-action">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+          </svg>
+          Cancelar
+        </a>
+
+        <button type="submit" class="btn-primary-action">
+          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            {% if editing %}
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+              <polyline points="17 21 17 13 7 13 7 21"/>
+              <polyline points="7 3 7 8 15 8"/>
+            {% else %}
+              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+            {% endif %}
+          </svg>
+          {% if editing %}Guardar cambios{% else %}Crear usuario{% endif %}
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</form>
+
+{% if editing %}
+<form id="delete-form" method="POST"
+      action="{% url 'company:user_delete' edit_user.pk %}" style="display:none;">
+  {% csrf_token %}
+</form>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.getElementById('photo-input').addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const preview = document.getElementById('photo-preview');
+      preview.innerHTML = `
+        <img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;">
+        <div class="avatar-overlay">
+          <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+        </div>`;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  {% if editing %}
+  function confirmDelete() {
+    if (confirm('¿Eliminar este usuario? Esta acción no se puede deshacer.')) {
+      document.getElementById('delete-form').submit();
+    }
+  }
+  {% endif %}
+</script>
+{% endblock %}

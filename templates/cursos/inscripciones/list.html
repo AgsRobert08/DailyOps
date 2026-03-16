@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+{% block title %}Inscripciones — {{ company.name }}{% endblock %}
+{% block page_title %}Inscripciones{% endblock %}
+
+{% block extra_css %}
+<style>
+  .tbl { width:100%; border-collapse:collapse; }
+  .tbl th {
+    font-size:11px; font-weight:600; letter-spacing:.06em;
+    text-transform:uppercase; color:#94a3b8;
+    padding:12px 16px; text-align:left;
+    border-bottom:1px solid #f1f5f9; white-space:nowrap;
+  }
+  .tbl td {
+    padding:13px 16px; font-size:14px;
+    border-bottom:1px solid #f8fafc; vertical-align:middle;
+  }
+  .tbl tr:last-child td { border-bottom:none; }
+  .tbl tbody tr:hover td { background:#fafbfc; }
+
+  .avatar-sm {
+    width:34px; height:34px; border-radius:50%;
+    background:color-mix(in srgb, var(--color-primary) 12%, white);
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:600; color:var(--color-primary);
+    flex-shrink:0;
+  }
+
+  /* Filtro género — pills */
+  .gender-pills { display:flex; gap:6px; }
+  .gpill {
+    padding:6px 14px; border-radius:999px; font-size:13px; font-weight:500;
+    border:1.5px solid #e8edf2; background:white; color:#64748b;
+    cursor:pointer; text-decoration:none; transition:all .15s;
+  }
+  .gpill:hover   { border-color:var(--color-primary); color:var(--color-primary); }
+  .gpill.active  {
+    background:var(--color-primary); border-color:var(--color-primary);
+    color:white;
+  }
+
+  .search-bar {
+    display:flex; align-items:center; gap:8px;
+    background:#f8fafc; border:1.5px solid #e8edf2;
+    border-radius:10px; padding:8px 14px;
+  }
+  .search-bar input {
+    border:none; outline:none; background:transparent;
+    font-size:14px; font-family:'Outfit',sans-serif; color:#1e293b; width:200px;
+  }
+  .search-bar input::placeholder { color:#c8d0da; }
+
+  .filter-select {
+    border:1.5px solid #e8edf2; border-radius:10px;
+    padding:8px 12px; font-size:13px;
+    font-family:'Outfit',sans-serif; color:#1e293b;
+    background:white; outline:none; cursor:pointer;
+  }
+
+  .tbl-btn {
+    display:inline-flex; align-items:center; justify-content:center;
+    width:32px; height:32px; border-radius:8px;
+    border:none; cursor:pointer; text-decoration:none;
+    transition:background .15s, transform .1s; flex-shrink:0;
+  }
+  .tbl-btn:hover { transform:translateY(-1px); }
+  .btn-qr  { background:#f0fdf4; color:#16a34a; }
+  .btn-qr:hover  { background:#dcfce7; }
+  .btn-edit { background:color-mix(in srgb, var(--color-primary) 10%, white); color:var(--color-primary); }
+  .btn-edit:hover { background:color-mix(in srgb, var(--color-primary) 18%, white); color:var(--color-primary); }
+  .btn-del  { background:#fff5f5; color:#dc2626; }
+  .btn-del:hover  { background:#fee2e2; }
+
+  /* Modal confirm */
+  .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:2000; align-items:center; justify-content:center; }
+  .overlay.show { display:flex; }
+  .confirm-box {
+    background:white; border-radius:16px; padding:28px;
+    width:100%; max-width:380px; margin:16px;
+    animation:cIn .2s cubic-bezier(.16,1,.3,1);
+  }
+  @keyframes cIn { from{opacity:0;transform:scale(.94) translateY(8px)} to{opacity:1;transform:scale(1) translateY(0)} }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+  <div>
+    <h4 style="font-weight:700; color:#1e293b; margin-bottom:2px;">Inscripciones</h4>
+    <p style="font-size:13px; color:#94a3b8; margin:0;">{{ total }} inscrito{{ total|pluralize:"s" }} registrado{{ total|pluralize:"s" }}</p>
+  </div>
+  <div style="display:flex; gap:10px; flex-wrap:wrap;">
+    <!-- Exportar PDF -->
+    <a href="{% url 'cursos:inscripciones_pdf' %}?genero={{ genero_sel }}&zona={{ zona_sel }}&q={{ q }}"
+       style="display:inline-flex; align-items:center; gap:7px; padding:9px 16px;
+              background:#f1f5f9; color:#475569; border-radius:10px;
+              font-size:13px; font-weight:600; text-decoration:none;">
+      <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+        <polyline points="14 2 14 8 20 8"/>
+        <line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>
+        <polyline points="10 9 9 9 8 9"/>
+      </svg>
+      Exportar PDF
+    </a>
+    <!-- Nuevo inscrito -->
+    <a href="{% url 'cursos:inscripcion_create' %}"
+       style="display:inline-flex; align-items:center; gap:7px; padding:9px 18px;
+              background:var(--color-primary); color:white; border-radius:10px;
+              font-size:14px; font-weight:600; text-decoration:none;">
+      <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Nuevo inscrito
+    </a>
+  </div>
+</div>
+
+<!-- Tabla -->
+<div style="background:white; border-radius:14px; border:1px solid #f1f5f9; overflow:hidden;">
+
+  <!-- Toolbar -->
+  <form method="GET" id="filter-form">
+    <div style="padding:14px 20px; border-bottom:1px solid #f1f5f9;
+                display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+
+      <!-- Búsqueda -->
+      <div class="search-bar">
+        <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#94a3b8" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <input type="text" name="q" value="{{ q }}" placeholder="Nombre o teléfono...">
+      </div>
+
+      <!-- Filtro zona -->
+      <select name="zona" class="filter-select" onchange="this.form.submit()">
+        <option value="">Todas las zonas</option>
+        {% for code, label in zonas %}
+          <option value="{{ code }}" {% if zona_sel == code %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+
+      <!-- Filtro género — pills -->
+      <div class="gender-pills">
+        <a href="?q={{ q }}&zona={{ zona_sel }}"
+           class="gpill {% if not genero_sel %}active{% endif %}">Todos</a>
+        <a href="?q={{ q }}&zona={{ zona_sel }}&genero=M"
+           class="gpill {% if genero_sel == 'M' %}active{% endif %}">Masculino</a>
+        <a href="?q={{ q }}&zona={{ zona_sel }}&genero=F"
+           class="gpill {% if genero_sel == 'F' %}active{% endif %}">Femenino</a>
+      </div>
+
+      <span style="margin-left:auto; font-size:13px; color:#94a3b8;">
+        {{ total }} resultado{{ total|pluralize:"s" }}
+      </span>
+    </div>
+  </form>
+
+  <div style="overflow-x:auto;">
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>Inscrito</th>
+          <th>Zona</th>
+          <th>Grado</th>
+          <th>Teléfono</th>
+          <th>Periodo</th>
+          <th>Monto</th>
+          <th style="text-align:right;">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ins in inscritos %}
+        <tr>
+          <td>
+            <div style="display:flex; align-items:center; gap:11px;">
+              <div class="avatar-sm">{{ ins.nombre|slice:":1"|upper }}</div>
+              <div>
+                <div style="font-weight:500; color:#1e293b;">{{ ins.nombre }}</div>
+                <span style="font-size:11px; padding:2px 8px; border-radius:999px; font-weight:500;
+                  {% if ins.genero == 'M' %}background:#eff6ff; color:#1d4ed8;
+                  {% else %}background:#fdf2f8; color:#9d174d;{% endif %}">
+                  {{ ins.get_genero_display }}
+                </span>
+              </div>
+            </div>
+          </td>
+          <td style="color:#64748b; font-size:13px;">{{ ins.get_zona_display|default:"—" }}</td>
+          <td style="color:#64748b; font-size:12px; max-width:160px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+            {{ ins.get_grado_display }}
+          </td>
+          <td style="color:#64748b;">{{ ins.telefono }}</td>
+          <td style="color:#64748b; font-size:13px;">{{ ins.periodo|default:"—" }}</td>
+          <td style="font-weight:500; color:#1e293b;">${{ ins.monto }}</td>
+          <td>
+            <div style="display:flex; align-items:center; gap:6px; justify-content:flex-end;">
+              <a href="{% url 'cursos:inscripcion_qr' ins.pk %}" target="_blank"
+                 class="tbl-btn btn-qr" title="Ver QR">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                  <rect x="3" y="14" width="7" height="7" rx="1"/>
+                  <path d="M14 14h.01M14 17h3M17 14v3M20 14h.01M20 17h.01"/>
+                </svg>
+              </a>
+              <a href="{% url 'cursos:inscripcion_edit' ins.pk %}"
+                 class="tbl-btn btn-edit" title="Editar">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+              </a>
+              <button type="button" class="tbl-btn btn-del" title="Eliminar"
+                      onclick="askDelete('{{ ins.pk }}', '{{ ins.nombre|escapejs }}')">
+                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                  <path d="M10 11v6"/><path d="M14 11v6"/>
+                </svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" style="text-align:center; padding:56px; color:#94a3b8; font-size:14px;">
+            No hay inscritos aún.
+            <a href="{% url 'cursos:inscripcion_create' %}"
+               style="color:var(--color-primary); margin-left:4px; font-weight:500;">
+              Registrar el primero →
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal eliminar -->
+<div class="overlay" id="overlay">
+  <div class="confirm-box">
+    <div style="width:48px; height:48px; border-radius:12px; background:#fff5f5;
+                display:flex; align-items:center; justify-content:center; margin-bottom:16px;">
+      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#dc2626" stroke-width="2">
+        <polyline points="3 6 5 6 21 6"/>
+        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+      </svg>
+    </div>
+    <div style="font-size:17px; font-weight:700; color:#1e293b; margin-bottom:6px;">Eliminar inscrito</div>
+    <div style="font-size:14px; color:#64748b; margin-bottom:24px; line-height:1.5;">
+      ¿Eliminar a <strong id="del-name"></strong>? Esta acción no se puede deshacer.
+    </div>
+    <div style="display:flex; gap:10px; justify-content:flex-end;">
+      <button onclick="closeModal()"
+              style="padding:9px 18px; background:#f1f5f9; color:#475569; border:none;
+                     border-radius:10px; font-size:14px; font-weight:600;
+                     font-family:'Outfit',sans-serif; cursor:pointer;">
+        Cancelar
+      </button>
+      <form id="del-form" method="POST" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit"
+                style="padding:9px 18px; background:#dc2626; color:white; border:none;
+                       border-radius:10px; font-size:14px; font-weight:600;
+                       font-family:'Outfit',sans-serif; cursor:pointer;">
+          Eliminar
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function askDelete(pk, name) {
+    document.getElementById('del-name').textContent = name;
+    document.getElementById('del-form').action = `/cursos/inscripciones/${pk}/eliminar/`;
+    document.getElementById('overlay').classList.add('show');
+  }
+  function closeModal() {
+    document.getElementById('overlay').classList.remove('show');
+  }
+  document.getElementById('overlay').addEventListener('click', e => {
+    if (e.target === document.getElementById('overlay')) closeModal();
+  });
+
+  // Submit al buscar con Enter
+  document.querySelector('.search-bar input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('filter-form').submit();
+  });
+</script>
+{% endblock %}
