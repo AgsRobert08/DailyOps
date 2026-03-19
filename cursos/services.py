@@ -22,10 +22,7 @@ Tu inscripción ha sido registrada correctamente.
 
 Datos de tu registro:
   • Nombre:  {inscrito.nombre}
-  • Grado:   {inscrito.get_grado_display()}
-  • Zona:    {inscrito.get_zona_display() or '—'}
-  • Periodo: {inscrito.periodo or '—'}
-  • Monto:   ${inscrito.monto}
+  • Teléfono:   {inscrito.telefono}
 
 Adjunto encontrarás tu código QR personal.
 Preséntalo al momento de pasar lista.
@@ -86,26 +83,8 @@ Saludos,
                 </tr>
                 <tr>
                   <td style="padding:14px 20px; border-bottom:1px solid #f1f5f9;">
-                    <span style="font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:.06em;">Grado</span><br>
-                    <span style="font-size:14px; color:#475569;">{inscrito.get_grado_display()}</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:14px 20px; border-bottom:1px solid #f1f5f9;">
-                    <span style="font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:.06em;">Zona</span><br>
-                    <span style="font-size:14px; color:#475569;">{inscrito.get_zona_display() or '—'}</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:14px 20px; border-bottom:1px solid #f1f5f9;">
-                    <span style="font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:.06em;">Periodo</span><br>
-                    <span style="font-size:14px; color:#475569;">{inscrito.periodo or '—'}</span>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding:14px 20px;">
-                    <span style="font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:.06em;">Monto</span><br>
-                    <span style="font-size:18px; font-weight:700; color:#303854;">${inscrito.monto}</span>
+                    <span style="font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:.06em;">Correo</span><br>
+                    <span style="font-size:14px; color:#475569;">{inscrito.telefono or '—'}</span>
                   </td>
                 </tr>
               </table>

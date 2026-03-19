@@ -9,13 +9,13 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --brand: {{ company.primary_color|default:"#b91085" }}; /* El color magenta de tu imagen */
+      --brand: {{ company.primary_color|default:"#b91085" }};
       --brand-dark: color-mix(in srgb, var(--brand) 80%, #000);
       --text-main: #1e293b;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    
+
     body, html {
       height: 100%;
       font-family: 'Outfit', sans-serif;
@@ -24,12 +24,12 @@
 
     .container {
       display: grid;
-      grid-template-columns: 0.8fr 1.2fr; /* Columna de color más pequeña */
+      grid-template-columns: 0.8fr 1.2fr;
       min-height: 100vh;
       width: 100%;
     }
 
-    /* --- PANEL IZQUIERDO (FRASE) --- */
+    /* ── PANEL IZQUIERDO ── */
     .info-panel {
       position: relative;
       background: var(--brand);
@@ -37,39 +37,78 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 60px;
+      padding: 60px 56px;
       color: white;
       text-align: center;
     }
 
-    .info-panel h2 {
-      font-size: clamp(24px, 4vw, 48px);
-      font-weight: 800;
-      line-height: 1.1;
-      letter-spacing: -1px;
+    /* Ícono decorativo arriba */
+    .quote-icon {
+      width: 48px; height: 48px;
+      background: rgba(255,255,255,.15);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 24px;
       z-index: 5;
     }
 
-    .info-panel p {
-      margin-top: 20px;
-      font-size: 1.1rem;
-      opacity: 0.9;
-      font-weight: 300;
+    .quote-text {
       z-index: 5;
+      position: relative;
+      text-align: center;
     }
 
-    /* Divisor curvo invertido hacia adentro */
+    .quote-text blockquote {
+      font-size: clamp(17px, 2.4vw, 24px);
+      font-weight: 600;
+      line-height: 1.5;
+      letter-spacing: -.3px;
+      font-style: italic;
+      position: relative;
+      padding: 0 10px;
+    }
+
+    .quote-text blockquote::before {
+      content: '\201C';
+      font-size: 4em;
+      line-height: 0;
+      vertical-align: -.4em;
+      margin-right: 4px;
+      opacity: .35;
+      font-style: normal;
+    }
+
+    .quote-text blockquote::after {
+      content: '\201D';
+      font-size: 4em;
+      line-height: 0;
+      vertical-align: -.4em;
+      margin-left: 4px;
+      opacity: .35;
+      font-style: normal;
+    }
+
+    .quote-ref {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: rgba(255,255,255,.15);
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .04em;
+    }
+
     .curve {
       position: absolute;
-      right: -1px;
-      top: 0;
-      height: 100%;
-      width: 80px;
+      right: -1px; top: 0;
+      height: 100%; width: 80px;
       fill: #ffffff;
       z-index: 10;
     }
 
-    /* --- PANEL DERECHO (LOGO + FORM) --- */
+    /* ── PANEL DERECHO ── */
     .login-panel {
       display: flex;
       align-items: center;
@@ -84,32 +123,20 @@
       animation: slideUp 0.6s ease-out;
     }
 
-    /* Contenedor del Logo sobre el Bienvenido */
-    .logo-box {
-      margin-bottom: 30px;
-      text-align: left;
-    }
-
-    .logo-box img {
-      max-width: 180px; /* Tamaño del logo ajustado */
-      height: auto;
-      object-fit: contain;
-    }
-
-    .welcome-text h1 { 
-      font-size: 38px; 
-      font-weight: 700; 
+    .welcome-text h1 {
+      font-size: 38px;
+      font-weight: 700;
       color: var(--text-main);
       margin-bottom: 5px;
     }
 
-    .welcome-text p { 
-      color: #64748b; 
+    .welcome-text p {
+      color: #64748b;
       margin-bottom: 35px;
-      font-size: 16px; 
+      font-size: 16px;
     }
 
-    /* Estilos de Formulario */
+    /* Campos */
     .field { margin-bottom: 20px; }
     .field label {
       display: block;
@@ -119,23 +146,43 @@
       color: #475569;
     }
 
+    .input-wrap {
+      position: relative;
+    }
+
     .input-ctrl {
       width: 100%;
       padding: 16px 22px;
-      border-radius: 16px; /* Curvas elegantes pero no exageradas */
+      border-radius: 16px;
       border: 2px solid #f1f5f9;
       background: #f8fafc;
       font-family: inherit;
       font-size: 16px;
-      transition: all 0.3s ease;
+      transition: all .3s ease;
     }
 
     .input-ctrl:focus {
       outline: none;
       border-color: var(--brand);
       background: #fff;
-      box-shadow: 0 8px 15px rgba(0,0,0,0.05);
+      box-shadow: 0 8px 15px rgba(0,0,0,.05);
     }
+
+    /* Padding derecho extra cuando hay botón de ojo */
+    .input-ctrl.has-toggle { padding-right: 52px; }
+
+    /* Botón ojo */
+    .toggle-pw {
+      position: absolute;
+      right: 14px; top: 50%;
+      transform: translateY(-50%);
+      background: none; border: none;
+      cursor: pointer; padding: 4px;
+      color: #94a3b8;
+      display: flex; align-items: center;
+      transition: color .2s;
+    }
+    .toggle-pw:hover { color: var(--brand); }
 
     .btn-login {
       width: 100%;
@@ -147,46 +194,32 @@
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all .3s ease;
       margin-top: 10px;
       box-shadow: 0 10px 20px color-mix(in srgb, var(--brand) 30%, transparent);
     }
 
     .btn-login:hover {
       transform: translateY(-2px);
-      filter: brightness(1.1);
+      filter: brightness(1.08);
       box-shadow: 0 15px 25px color-mix(in srgb, var(--brand) 40%, transparent);
     }
 
     @keyframes slideUp {
       from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
+      to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* --- RESPONSIVO --- */
+    /* ── RESPONSIVO ── */
     @media (max-width: 900px) {
       .container { grid-template-columns: 1fr; }
-      
-      .info-panel {
-        padding: 40px 20px;
-        min-height: 250px;
-      }
-
+      .info-panel { padding: 40px 28px; min-height: 260px; }
       .curve {
-        bottom: -1px;
-        top: auto;
-        right: 0;
-        width: 100%;
-        height: 60px;
+        bottom: -1px; top: auto; right: 0;
+        width: 100%; height: 60px;
         transform: rotate(180deg);
       }
-
-      .login-panel {
-        padding: 40px 25px;
-        align-items: flex-start;
-      }
-      
-      .logo-box { text-align: center; }
+      .login-panel { padding: 40px 25px; align-items: flex-start; }
       .welcome-text { text-align: center; }
     }
   </style>
@@ -194,20 +227,24 @@
 <body>
 
 <div class="container">
-  
+
+  <!-- ── PANEL IZQUIERDO ── -->
   <section class="info-panel">
-    <h2>Gestión que fluye contigo.</h2>
-    <p>Optimiza tu operación diaria en un solo lugar.</p>
-    
+
+    <div class="quote-text">
+      <blockquote>
+        Hoy damos lo mejor de nosotros, porque todo lo podemos en Él que nos fortalece
+      </blockquote>
+    </div>
+
     <svg class="curve" viewBox="0 0 100 100" preserveAspectRatio="none">
-        <path d="M100 0 C 0 0 0 100 100 100 Z"></path>
+      <path d="M100 0 C 0 0 0 100 100 100 Z"></path>
     </svg>
   </section>
 
+  <!-- ── PANEL DERECHO ── -->
   <section class="login-panel">
     <div class="login-wrapper">
-      
-      
 
       <div class="welcome-text">
         <h1>Bienvenido</h1>
@@ -216,24 +253,59 @@
 
       <form method="POST">
         {% csrf_token %}
+
         <div class="field">
           <label>Usuario</label>
-          <input type="text" name="username" class="input-ctrl" placeholder="ej: nombre.apellido" required>
+          <input type="text" name="username" class="input-ctrl"
+                 placeholder="ej: nombre.apellido" required>
         </div>
 
         <div class="field">
           <label>Contraseña</label>
-          <input type="password" name="password" class="input-ctrl" placeholder="••••••••" required>
+          <div class="input-wrap">
+            <input type="password" name="password" id="pw-input"
+                   class="input-ctrl has-toggle"
+                   placeholder="••••••••" required>
+            <button type="button" class="toggle-pw" id="toggle-pw-btn"
+                    onclick="togglePassword()" aria-label="Mostrar contraseña">
+              <!-- Ojo cerrado (visible cuando contraseña está oculta) -->
+              <svg id="icon-eye-off" width="20" height="20" fill="none" viewBox="0 0 24 24"
+                   stroke="currentColor" stroke-width="2">
+                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+                <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+                <line x1="1" y1="1" x2="23" y2="23"/>
+              </svg>
+              <!-- Ojo abierto (visible cuando contraseña se muestra) -->
+              <svg id="icon-eye" width="20" height="20" fill="none" viewBox="0 0 24 24"
+                   stroke="currentColor" stroke-width="2" style="display:none;">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+            </button>
+          </div>
         </div>
 
         <button type="submit" class="btn-login">
           Entrar ahora
         </button>
       </form>
+
     </div>
   </section>
 
 </div>
+
+<script>
+  function togglePassword() {
+    const input  = document.getElementById('pw-input');
+    const eyeOff = document.getElementById('icon-eye-off');
+    const eyeOn  = document.getElementById('icon-eye');
+    const showing = input.type === 'text';
+    input.type       = showing ? 'password' : 'text';
+    eyeOff.style.display = showing ? '' : 'none';
+    eyeOn.style.display  = showing ? 'none' : '';
+  }
+</script>
 
 </body>
 </html>

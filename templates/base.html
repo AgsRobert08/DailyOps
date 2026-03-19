@@ -248,7 +248,7 @@
                M4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2z
                M14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
         </svg>
-        <span>Dashboard</span>
+        <span>Inicio</span>
       </a>
 
       {% if not request.user.is_operador %}
@@ -281,7 +281,7 @@
         </svg>
         <span>Asistencia</span>
       </a>
-
+      {% if not request.user.is_operador %}
       <span class="nav-label">Comunicación</span>
       <a href="{% url 'cursos:whatsapp_historial' %}"
          class="nav-item {% if request.resolver_match.namespace == 'cursos' and 'whatsapp' in request.resolver_match.url_name %}active{% endif %}">
@@ -294,6 +294,7 @@
         </svg>
         <span>WhatsApp</span>
       </a>
+      {% endif %}
 
       {% if not request.user.is_operador %}
       <span class="nav-label">Sistema</span>

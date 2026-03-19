@@ -22,8 +22,7 @@
     width:34px; height:34px; border-radius:50%;
     background:color-mix(in srgb, var(--color-primary) 12%, white);
     display:flex; align-items:center; justify-content:center;
-    font-size:12px; font-weight:600; color:var(--color-primary);
-    flex-shrink:0;
+    font-size:12px; font-weight:600; color:var(--color-primary); flex-shrink:0;
   }
 
   .stat-card {
@@ -31,20 +30,17 @@
     border:1px solid #f1f5f9; padding:20px 22px;
   }
 
-  /* Pills de género */
+  /* Pills género */
   .gender-pills { display:flex; gap:6px; }
   .gpill {
     padding:6px 14px; border-radius:999px; font-size:13px; font-weight:500;
     border:1.5px solid #e8edf2; background:white; color:#64748b;
-    cursor:pointer; text-decoration:none; transition:all .15s;
-    white-space:nowrap;
+    cursor:pointer; text-decoration:none; transition:all .15s; white-space:nowrap;
   }
   .gpill:hover  { border-color:var(--color-primary); color:var(--color-primary); }
-  .gpill.active {
-    background:var(--color-primary); border-color:var(--color-primary); color:white;
-  }
+  .gpill.active { background:var(--color-primary); border-color:var(--color-primary); color:white; }
 
-  /* Buscador manual */
+  /* Buscador */
   .search-bar {
     display:flex; align-items:center; gap:8px;
     background:#f8fafc; border:1.5px solid #e8edf2;
@@ -56,7 +52,6 @@
   }
   .search-bar input::placeholder { color:#c8d0da; }
 
-  /* Resultados de búsqueda manual */
   .search-results {
     position:absolute; top:calc(100% + 6px); left:0; right:0;
     background:white; border-radius:12px; border:1px solid #e8edf2;
@@ -64,7 +59,6 @@
     overflow:hidden; display:none;
   }
   .search-results.show { display:block; }
-
   .search-result-item {
     display:flex; align-items:center; justify-content:space-between;
     gap:12px; padding:12px 16px;
@@ -75,31 +69,49 @@
 
   .btn-marcar {
     display:inline-flex; align-items:center; gap:5px;
-    padding:6px 12px; border-radius:8px;
-    background:#f0fdf4; color:#16a34a;
+    padding:6px 12px; border-radius:8px; background:#f0fdf4; color:#16a34a;
     border:none; cursor:pointer; font-size:12px; font-weight:600;
-    font-family:'Outfit',sans-serif; white-space:nowrap;
-    transition:background .15s;
+    font-family:'Outfit',sans-serif; white-space:nowrap; transition:background .15s;
   }
-  .btn-marcar:hover   { background:#dcfce7; }
+  .btn-marcar:hover { background:#dcfce7; }
   .btn-ya-presente {
     display:inline-flex; align-items:center; gap:5px;
-    padding:6px 12px; border-radius:8px;
-    background:#f8fafc; color:#94a3b8;
-    border:none; font-size:12px; font-weight:600;
-    white-space:nowrap; cursor:default;
+    padding:6px 12px; border-radius:8px; background:#f8fafc; color:#94a3b8;
+    border:none; font-size:12px; font-weight:600; white-space:nowrap; cursor:default;
   }
 
+  /* Botones acción con tooltip */
   .tbl-btn {
     display:inline-flex; align-items:center; justify-content:center;
     width:32px; height:32px; border-radius:8px;
     border:none; cursor:pointer; text-decoration:none;
     transition:background .15s, transform .1s;
+    position:relative;
   }
   .tbl-btn:hover { transform:translateY(-1px); }
-  .btn-del  { background:#fff5f5; color:#dc2626; }
+  .btn-del       { background:#fff5f5; color:#dc2626; }
   .btn-del:hover { background:#fee2e2; }
 
+  .tbl-btn::after {
+    content: attr(data-tip);
+    position:absolute; bottom:calc(100% + 8px); left:50%;
+    transform:translateX(-50%) scale(.92);
+    background:#1e293b; color:white;
+    font-size:12px; font-weight:500; font-family:'Outfit',sans-serif;
+    padding:5px 10px; border-radius:7px; white-space:nowrap;
+    pointer-events:none; opacity:0;
+    transition:opacity .15s, transform .15s; z-index:100;
+  }
+  .tbl-btn::before {
+    content:'';
+    position:absolute; bottom:calc(100% + 3px); left:50%;
+    transform:translateX(-50%) scale(.92);
+    border:5px solid transparent; border-top-color:#1e293b;
+    pointer-events:none; opacity:0;
+    transition:opacity .15s, transform .15s; z-index:100;
+  }
+  .tbl-btn:hover::after,
+  .tbl-btn:hover::before { opacity:1; transform:translateX(-50%) scale(1); }
 
   /* Toast */
   .toast-notif {
@@ -110,14 +122,14 @@
     display:flex; align-items:center; gap:10px;
     box-shadow:0 8px 24px rgba(0,0,0,0.15);
     z-index:3000; transform:translateY(80px); opacity:0;
-    transition:all .3s cubic-bezier(.16,1,.3,1);
+    transition:all .3s cubic-bezier(.16,1,.3,1); max-width:320px;
   }
   .toast-notif.show    { transform:translateY(0); opacity:1; }
   .toast-notif.success { border-left:4px solid #16a34a; }
   .toast-notif.warning { border-left:4px solid #d97706; }
   .toast-notif.error   { border-left:4px solid #dc2626; }
 
-  /* Modal confirm */
+  /* Modal */
   .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:2000; align-items:center; justify-content:center; }
   .overlay.show { display:flex; }
   .confirm-box {
@@ -137,8 +149,9 @@
     <h4 style="font-weight:700; color:#1e293b; margin-bottom:2px;">Asistencia</h4>
     <p style="font-size:13px; color:#94a3b8; margin:0;">Registro de presencias por día</p>
   </div>
-  <div style="display:flex; gap:10px; flex-wrap:wrap;">
-    <!-- PDF -->
+  <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+
+    <!-- Exportar PDF -->
     <a href="{% url 'cursos:asistencia_pdf' %}?fecha={{ fecha }}&genero={{ genero_sel }}"
        style="display:inline-flex; align-items:center; gap:7px; padding:9px 16px;
               background:#f1f5f9; color:#475569; border-radius:10px;
@@ -150,7 +163,8 @@
       </svg>
       Exportar PDF
     </a>
-    <!-- Escáner QR -->
+
+    <!-- Escanear QR -->
     <a href="{% url 'cursos:asistencia_scan' %}"
        style="display:inline-flex; align-items:center; gap:7px; padding:9px 18px;
               background:var(--color-primary); color:white; border-radius:10px;
@@ -183,7 +197,8 @@
       <div style="font-size:11px; font-weight:600; letter-spacing:.06em; text-transform:uppercase; color:#94a3b8; margin-bottom:8px;">
         Ausentes
       </div>
-      <div style="font-size:34px; font-weight:700; color:#94a3b8; line-height:1;" id="stat-ausentes">
+      <div style="font-size:34px; font-weight:700; color:#94a3b8; line-height:1;">
+        {% widthratio total_presentes total_inscritos 1 as _ %}
         {{ total_inscritos|add:"-0" }}
       </div>
       <div style="font-size:12px; color:#94a3b8; margin-top:4px;">no registrados</div>
@@ -195,23 +210,21 @@
         Porcentaje
       </div>
       <div style="font-size:34px; font-weight:700; color:#16a34a; line-height:1;">
-        {% if total_inscritos %}
-          {% widthratio total_presentes total_inscritos 100 %}%
-        {% else %}0%{% endif %}
+        {% if total_inscritos %}{% widthratio total_presentes total_inscritos 100 %}%{% else %}0%{% endif %}
       </div>
       <div style="font-size:12px; color:#94a3b8; margin-top:4px;">asistencia del día</div>
     </div>
   </div>
 </div>
 
-<!-- Buscador manual + tabla -->
+<!-- Tabla -->
 <div style="background:white; border-radius:14px; border:1px solid #f1f5f9; overflow:hidden;">
 
   <!-- Toolbar -->
   <div style="padding:14px 20px; border-bottom:1px solid #f1f5f9;
               display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
 
-    <!-- Búsqueda manual por nombre -->
+    <!-- Búsqueda manual -->
     <div style="position:relative;">
       <div class="search-bar">
         <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#94a3b8" stroke-width="2">
@@ -225,15 +238,21 @@
     <!-- Filtro fecha -->
     <form method="GET" style="display:flex; align-items:center; gap:8px;">
       <input type="hidden" name="genero" value="{{ genero_sel }}">
-      <label style="font-size:13px; font-weight:500; color:#475569;">Fecha:</label>
-      <input type="date" name="fecha" value="{{ fecha }}"
-             style="border:1.5px solid #e8edf2; border-radius:10px; padding:7px 12px;
-                    font-size:14px; font-family:'Outfit',sans-serif; color:#1e293b;
-                    outline:none; background:white;"
-             onchange="this.form.submit()">
+      <div style="display:flex; align-items:center; gap:8px; padding:7px 12px;
+                  background:#f8fafc; border:1.5px solid #e8edf2; border-radius:10px;">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="#94a3b8" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        <input type="date" name="fecha" value="{{ fecha }}"
+               style="border:none; outline:none; font-size:14px;
+                      font-family:'Outfit',sans-serif; color:#1e293b; background:transparent;"
+               onchange="this.form.submit()">
+      </div>
     </form>
 
-    <!-- Filtro género pills -->
+    <!-- Filtro género -->
     <div class="gender-pills">
       <a href="?fecha={{ fecha }}"
          class="gpill {% if not genero_sel %}active{% endif %}">Todos</a>
@@ -250,12 +269,13 @@
 
   <!-- Tabla -->
   <div style="overflow-x:auto;">
-    <table class="tbl" id="asistencias-tbl">
+    <table class="tbl">
       <thead>
         <tr>
           <th>Inscrito</th>
-          <th>Zona</th>
-          <th>Grado</th>
+          <th>Teléfono</th>
+          <th>Correo electrónico</th>
+          <th>Fecha</th>
           <th>Hora de entrada</th>
           <th style="text-align:right;">Acciones</th>
         </tr>
@@ -267,15 +287,18 @@
             <div style="display:flex; align-items:center; gap:11px;">
               <div class="avatar-sm">{{ a.inscrito.nombre|slice:":1"|upper }}</div>
               <div>
-                <div style="font-weight:500; color:#1e293b;">{{ a.inscrito.nombre }}</div>
-                <div style="font-size:12px; color:#94a3b8;">{{ a.inscrito.telefono }}</div>
+                <div style="font-weight:500; color:#1e293b; margin-bottom:3px;">{{ a.inscrito.nombre }}</div>
+                <span style="font-size:11px; padding:2px 8px; border-radius:999px; font-weight:500;
+                  {% if a.inscrito.genero == 'M' %}background:#eff6ff; color:#1d4ed8;
+                  {% else %}background:#fdf2f8; color:#9d174d;{% endif %}">
+                  {{ a.inscrito.get_genero_display }}
+                </span>
               </div>
             </div>
           </td>
-          <td style="color:#64748b; font-size:13px;">{{ a.inscrito.get_zona_display|default:"—" }}</td>
-          <td style="color:#64748b; font-size:12px; max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
-            {{ a.inscrito.get_grado_display }}
-          </td>
+          <td style="color:#64748b; font-size:13px;">{{ a.inscrito.telefono }}</td>
+          <td style="color:#64748b; font-size:13px;">{{ a.inscrito.correo_electronico|default:"—" }}</td>
+          <td style="color:#64748b; font-size:13px; white-space:nowrap;">{{ a.fecha|date:"d/m/Y" }}</td>
           <td>
             <span style="display:inline-flex; align-items:center; gap:5px; padding:3px 10px;
                          border-radius:999px; background:#f0fdf4; color:#15803d;
@@ -286,7 +309,7 @@
           </td>
           <td>
             <div style="display:flex; justify-content:flex-end;">
-              <button type="button" class="tbl-btn btn-del" title="Eliminar asistencia"
+              <button type="button" class="tbl-btn btn-del" data-tip="Eliminar asistencia"
                       onclick="askDelete('{{ a.pk }}', '{{ a.inscrito.nombre|escapejs }}')">
                 <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <polyline points="3 6 5 6 21 6"/>
@@ -299,7 +322,7 @@
         </tr>
         {% empty %}
         <tr id="empty-row">
-          <td colspan="5" style="text-align:center; padding:56px; color:#94a3b8; font-size:14px;">
+          <td colspan="6" style="text-align:center; padding:56px; color:#94a3b8; font-size:14px;">
             No hay registros para esta fecha.
             <a href="{% url 'cursos:asistencia_scan' %}"
                style="color:var(--color-primary); margin-left:4px; font-weight:500;">
@@ -313,8 +336,6 @@
   </div>
 </div>
 
-
-<!-- Toast -->
 <div class="toast-notif" id="toast-notif"></div>
 
 <!-- Modal eliminar -->
@@ -355,9 +376,11 @@
 
 {% block extra_js %}
 <script>
-  const CSRF = '{{ csrf_token }}';
+  const CSRF          = '{{ csrf_token }}';
+  const URL_BUSCAR    = '{% url "cursos:buscar_inscrito" %}';
+  const URL_REGISTRAR = '{% url "cursos:asistencia_registrar" %}';
 
-  // ── TOAST ──────────────────────────────────────────
+  // ── TOAST ─────────────────────────────────────────────
   function showToast(msg, type = 'success') {
     const t = document.getElementById('toast-notif');
     t.textContent = msg;
@@ -365,10 +388,7 @@
     setTimeout(() => t.classList.remove('show'), 3000);
   }
 
-  const URL_BUSCAR    = '{% url "cursos:buscar_inscrito" %}';
-  const URL_REGISTRAR = '{% url "cursos:asistencia_registrar" %}';
-
-  // ── MODAL ELIMINAR ───────────────────────────────────
+  // ── MODAL ─────────────────────────────────────────────
   function askDelete(pk, name) {
     document.getElementById('del-name').textContent = name;
     document.getElementById('del-form').action = `/cursos/asistencia/${pk}/eliminar/`;
@@ -381,7 +401,7 @@
     if (e.target === document.getElementById('overlay')) closeModal();
   });
 
-  // ── BÚSQUEDA MANUAL ──────────────────────────────────
+  // ── BÚSQUEDA MANUAL ───────────────────────────────────
   const searchInput   = document.getElementById('search-manual');
   const searchResults = document.getElementById('search-results');
   let searchDelay     = null;
@@ -394,47 +414,37 @@
     searchDelay = setTimeout(async () => {
       const res  = await fetch(`${URL_BUSCAR}?q=${encodeURIComponent(q)}`);
       const data = await res.json();
-
       if (!data.length) {
-        searchResults.innerHTML = `
-          <div style="padding:16px; text-align:center; font-size:13px; color:#94a3b8;">
-            Sin resultados
-          </div>`;
+        searchResults.innerHTML = `<div style="padding:16px; text-align:center; font-size:13px; color:#94a3b8;">Sin resultados</div>`;
         searchResults.classList.add('show');
         return;
       }
-
       searchResults.innerHTML = data.map(i => `
         <div class="search-result-item">
           <div>
             <div style="font-weight:500; color:#1e293b; font-size:14px;">${i.nombre}</div>
             <div style="font-size:12px; color:#94a3b8;">${i.telefono}</div>
           </div>
-          <button class="btn-marcar"
-                  data-codigo="${i.codigo}"
-                  data-nombre="${i.nombre}"
-                  onclick="marcarManual(this.dataset.codigo, this.dataset.nombre, this)">
+          <button class="btn-marcar" onclick="marcarManual('${i.codigo}', '${i.nombre.replace(/'/g,"\\'")}', this)">
             <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
             Marcar presente
           </button>
-        </div>
-      `).join('');
+        </div>`).join('');
       searchResults.classList.add('show');
     }, 300);
   });
 
-  // Cerrar resultados al hacer clic fuera
   document.addEventListener('click', e => {
     if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
       searchResults.classList.remove('show');
     }
   });
 
-  // ── MARCAR ASISTENCIA MANUAL ─────────────────────────
+  // ── MARCAR ASISTENCIA MANUAL ──────────────────────────
   async function marcarManual(codigo, nombre, btn) {
-    btn.disabled = true;
+    btn.disabled    = true;
     btn.textContent = 'Registrando...';
 
     try {
@@ -446,23 +456,24 @@
       const data = await res.json();
 
       if (data.ok && data.nuevo) {
-        // Agregar fila a la tabla dinámicamente
-        const tbody  = document.getElementById('tbl-body');
-        const empty  = document.getElementById('empty-row');
-        if (empty) empty.remove();
+        // Eliminar fila vacía si existe
+        document.getElementById('empty-row')?.remove();
 
+        // Agregar fila con los campos correctos (sin zona/grado)
+        const hoy = new Date().toLocaleDateString('es-MX', { day:'2-digit', month:'2-digit', year:'numeric' }).replace(/\//g, '/');
         const tr = document.createElement('tr');
         tr.innerHTML = `
           <td>
             <div style="display:flex; align-items:center; gap:11px;">
               <div class="avatar-sm">${nombre.slice(0,1).toUpperCase()}</div>
               <div>
-                <div style="font-weight:500; color:#1e293b;">${nombre}</div>
+                <div style="font-weight:500; color:#1e293b; margin-bottom:3px;">${nombre}</div>
               </div>
             </div>
           </td>
-          <td style="color:#64748b; font-size:13px;">${data.zona || '—'}</td>
-          <td style="color:#64748b; font-size:12px;">${data.grado || '—'}</td>
+          <td style="color:#64748b; font-size:13px;">—</td>
+          <td style="color:#64748b; font-size:13px;">—</td>
+          <td style="color:#64748b; font-size:13px; white-space:nowrap;">${hoy}</td>
           <td>
             <span style="display:inline-flex; align-items:center; gap:5px; padding:3px 10px;
                          border-radius:999px; background:#f0fdf4; color:#15803d;
@@ -471,31 +482,31 @@
               ${data.hora}
             </span>
           </td>
-          <td><div style="display:flex; justify-content:flex-end;">
-            <span style="font-size:12px; color:#94a3b8;">—</span>
-          </div></td>`;
-        tbody.prepend(tr);
+          <td>
+            <div style="display:flex; justify-content:flex-end;">
+              <span style="font-size:12px; color:#94a3b8;">—</span>
+            </div>
+          </td>`;
+        document.getElementById('tbl-body').prepend(tr);
 
-        // Cambiar botón a "ya presente"
         showToast(`✓ ${nombre} registrado — ${data.hora}`, 'success');
         btn.className = 'btn-ya-presente';
-        btn.innerHTML = `
-          <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-            <polyline points="20 6 9 17 4 12"/>
-          </svg>
-          Presente`;
+        btn.innerHTML = `<svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Presente`;
 
-      } else if (!data.nuevo) {
+      } else if (data.ok && !data.nuevo) {
         showToast(`⚠ ${nombre} ya registrado (${data.hora})`, 'warning');
         btn.className = 'btn-ya-presente';
         btn.innerHTML = `✓ Ya registrado (${data.hora})`;
+
       } else {
-        btn.disabled = false;
-        btn.textContent = 'Error, reintentar';
+        showToast(data.error || 'Error al registrar', 'error');
+        btn.disabled    = false;
+        btn.textContent = 'Reintentar';
       }
     } catch {
-      btn.disabled = false;
-      btn.textContent = 'Error, reintentar';
+      showToast('Error de conexión', 'error');
+      btn.disabled    = false;
+      btn.textContent = 'Reintentar';
     }
   }
 </script>

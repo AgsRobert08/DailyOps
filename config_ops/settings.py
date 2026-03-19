@@ -98,8 +98,8 @@ DEFAULT_FROM_EMAIL  = os.environ.get('EMAIL_HOST_USER',     'robert.agus.zba@gma
 # ── WHATSAPP ──────────────────────────────────────────────
 WHATSAPP_PROVIDER  = 'twilio'
 WHATSAPP_FROM      = 'whatsapp:+14155238886'
-TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', 'ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-TWILIO_AUTH_TOKEN  = os.environ.get('TWILIO_AUTH_TOKEN',  'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', 'ACb1633b2279b97b12776b176e7b5326c6')
+TWILIO_AUTH_TOKEN  = os.environ.get('TWILIO_AUTH_TOKEN',  '9eaa8dd31bf45f16700665cc59916405')
 
 # ── LOCAL OVERRIDES (no se sube a GitHub) ────────────────
 try:

@@ -4,97 +4,79 @@
 
 {% block extra_css %}
 <style>
-  .card-section {
-    background:white; border-radius:14px;
-    border:1px solid #f1f5f9; padding:24px;
+  .form-label {
+    font-size: 13px; font-weight: 500; color: #475569;
+    margin-bottom: 6px; display: block;
   }
-  .section-title {
-    font-size:11px; font-weight:600; letter-spacing:.07em;
-    text-transform:uppercase; color:#94a3b8;
-    margin-bottom:18px; padding-bottom:12px; border-bottom:1px solid #f1f5f9;
-  }
-  .form-label { font-size:13px; font-weight:500; color:#475569; margin-bottom:6px; display:block; }
   .form-control, .form-select {
-    border:1.5px solid #e8edf2; border-radius:10px;
-    padding:9px 13px; font-size:14px;
-    font-family:'Outfit',sans-serif; color:#1e293b;
-    transition:border-color .2s, box-shadow .2s;
-    width:100%; background:white;
+    border: 1.5px solid #e8edf2; border-radius: 10px;
+    padding: 9px 13px; font-size: 14px;
+    font-family: 'Outfit', sans-serif; color: #1e293b;
+    transition: border-color .2s, box-shadow .2s;
+    width: 100%; background: white;
   }
   .form-control:focus, .form-select:focus {
-    border-color:var(--color-primary);
-    box-shadow:0 0 0 3px color-mix(in srgb, var(--color-primary) 12%, transparent);
-    outline:none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 12%, transparent);
+    outline: none;
   }
-  .form-control::placeholder { color:#c8d0da; }
+  .form-control::placeholder { color: #c8d0da; }
 
-  /* Toggle switch */
-  .toggle-wrap {
-    display:flex; align-items:center; gap:12px;
-    padding:12px 14px; border:1.5px solid #e8edf2;
-    border-radius:10px; cursor:pointer;
-    transition:border-color .2s;
+  .section-title {
+    font-size: 11px; font-weight: 600; letter-spacing: .07em;
+    text-transform: uppercase; color: #94a3b8;
+    margin-bottom: 20px; padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
   }
-  .toggle-wrap:hover { border-color:var(--color-primary); }
-  .toggle-wrap:has(input:checked) {
-    border-color:var(--color-primary);
-    background:color-mix(in srgb, var(--color-primary) 4%, white);
-  }
-
-  .switch {
-    position:relative; width:42px; height:22px; flex-shrink:0;
-  }
-  .switch input { opacity:0; width:0; height:0; }
-  .switch-slider {
-    position:absolute; cursor:pointer; inset:0;
-    background:#d1d5db; border-radius:22px; transition:.25s;
-  }
-  .switch-slider::before {
-    content:""; position:absolute;
-    width:16px; height:16px; left:3px; bottom:3px;
-    background:white; border-radius:50%; transition:.25s;
-  }
-  .switch input:checked + .switch-slider { background:var(--color-primary); }
-  .switch input:checked + .switch-slider::before { transform:translateX(20px); }
 
   /* Radio género */
-  .radio-group { display:flex; gap:10px; }
+  .radio-group { display: flex; gap: 10px; }
   .radio-pill {
-    flex:1; display:flex; align-items:center; justify-content:center; gap:8px;
-    padding:10px 14px; border:1.5px solid #e8edf2; border-radius:10px;
-    cursor:pointer; font-size:14px; font-weight:500; color:#64748b;
-    transition:all .15s;
+    flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+    padding: 10px 14px; border: 1.5px solid #e8edf2; border-radius: 10px;
+    cursor: pointer; font-size: 14px; font-weight: 500; color: #64748b;
+    transition: all .15s;
   }
-  .radio-pill input { display:none; }
+  .radio-pill input { display: none; }
   .radio-pill:has(input:checked) {
-    border-color:var(--color-primary);
-    background:color-mix(in srgb, var(--color-primary) 8%, white);
-    color:var(--color-primary);
+    border-color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 8%, white);
+    color: var(--color-primary);
   }
 
+  /* QR inline */
+  .qr-inline {
+    display: flex; align-items: center; gap: 16px;
+    padding: 14px 16px; background: #f8fafc;
+    border: 1.5px solid #f1f5f9; border-radius: 12px;
+    margin-bottom: 28px;
+  }
+  .qr-inline img { width: 58px; height: 58px; border-radius: 8px; object-fit: contain; flex-shrink: 0; }
+  .qr-inline-info { flex: 1; min-width: 0; }
+  .qr-inline-info p { font-size: 13px; font-weight: 600; color: #1e293b; margin: 0 0 2px; }
+  .qr-inline-info code { font-size: 11px; color: #94a3b8; font-family: monospace; }
+  .qr-link {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 6px 12px; background: #f0fdf4; color: #16a34a;
+    border-radius: 8px; font-size: 12px; font-weight: 600;
+    text-decoration: none; white-space: nowrap; flex-shrink: 0;
+  }
+
+  /* Botones */
   .btn-primary-action {
-    display:inline-flex; align-items:center; gap:7px; padding:9px 20px;
-    background:var(--color-primary); color:white; border:none; border-radius:10px;
-    font-size:14px; font-weight:600; font-family:'Outfit',sans-serif;
-    cursor:pointer; text-decoration:none; transition:opacity .2s, transform .15s;
+    display: inline-flex; align-items: center; gap: 7px; padding: 9px 20px;
+    background: var(--color-primary); color: white; border: none; border-radius: 10px;
+    font-size: 14px; font-weight: 600; font-family: 'Outfit', sans-serif;
+    cursor: pointer; text-decoration: none; transition: opacity .2s, transform .15s;
   }
-  .btn-primary-action:hover { opacity:.88; transform:translateY(-1px); color:white; }
+  .btn-primary-action:hover { opacity: .88; transform: translateY(-1px); color: white; }
   .btn-secondary-action {
-    display:inline-flex; align-items:center; gap:7px; padding:9px 20px;
-    background:#f1f5f9; color:#475569; border:none; border-radius:10px;
-    font-size:14px; font-weight:600; font-family:'Outfit',sans-serif;
-    cursor:pointer; text-decoration:none; transition:background .2s;
+    display: inline-flex; align-items: center; gap: 7px; padding: 9px 20px;
+    background: #f1f5f9; color: #475569; border: none; border-radius: 10px;
+    font-size: 14px; font-weight: 600; font-family: 'Outfit', sans-serif;
+    cursor: pointer; text-decoration: none; transition: background .2s;
   }
-  .btn-secondary-action:hover { background:#e2e8f0; color:#334155; }
-
-  /* Monto preview */
-  .monto-preview {
-    display:inline-flex; align-items:center; gap:6px;
-    padding:6px 14px; border-radius:999px;
-    background:color-mix(in srgb, var(--color-primary) 10%, white);
-    color:var(--color-primary); font-size:13px; font-weight:600;
-    transition:all .2s;
-  }
+  .btn-secondary-action:hover { background: #e2e8f0; color: #334155; }
 </style>
 {% endblock %}
 
@@ -107,7 +89,7 @@
       {% if editing %}Editar inscrito{% else %}Nuevo inscrito{% endif %}
     </h4>
     <p style="font-size:13px; color:#94a3b8; margin:0;">
-      {% if editing %}Modifica los datos del inscrito{% else %}Completa los campos para registrar{% endif %}
+      {% if editing %}Modifica los datos del inscrito{% else %}Completa los campos para registrar un nuevo inscrito{% endif %}
     </p>
   </div>
   <a href="{% url 'cursos:inscripciones' %}" class="btn-secondary-action">
@@ -118,266 +100,100 @@
   </a>
 </div>
 
-<form method="POST">
-  {% csrf_token %}
-  <!-- Campos hidden para periodo y monto -->
-  <input type="hidden" name="periodo" id="hidden-periodo" value="{{ inscrito.periodo|default:'' }}">
-  <input type="hidden" name="monto"   id="hidden-monto"   value="{{ inscrito.monto|default:'0' }}">
+<!-- Card full width -->
+<div style="background:white; border-radius:14px; border:1px solid #f1f5f9; padding:28px;">
+  <form method="POST">
+    {% csrf_token %}
 
-  <div class="row g-4">
+    <!-- QR — solo en modo editar si existe -->
+    {% if editing and inscrito.qr_image %}
+    <div class="qr-inline">
+      <img src="{{ inscrito.qr_image.url }}" alt="QR del inscrito">
+      <div class="qr-inline-info">
+        <p>QR generado</p>
+        <code>{{ inscrito.codigo }}</code>
+      </div>
+      <a href="{% url 'cursos:inscripcion_qr' inscrito.pk %}" target="_blank" class="qr-link">
+        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>
+        Ver / imprimir
+      </a>
+    </div>
+    {% endif %}
 
-    <!-- ── COLUMNA IZQUIERDA ── -->
-    <div class="col-lg-6 d-flex flex-column gap-4">
+    <div class="section-title">Datos personales</div>
 
-      <!-- Datos personales -->
-      <div class="card-section">
-        <div class="section-title">Datos personales</div>
-        <div class="row g-3">
+    <!-- Sin max-width — los campos usan todo el ancho de la card -->
+    <div class="row g-3">
 
-          <div class="col-12">
-            <label class="form-label">Nombre completo *</label>
-            <input type="text" name="nombre" class="form-control"
-                   value="{{ inscrito.nombre|default:'' }}" placeholder="Nombre Apellido" required>
-          </div>
+      <div class="col-12">
+        <label class="form-label">Nombre completo <span style="color:#ef4444;">*</span></label>
+        <input type="text" name="nombre" class="form-control"
+               value="{{ inscrito.nombre|default:'' }}"
+               placeholder="Nombre Apellido" required>
+      </div>
 
-          <!-- Género como pills -->
-          <div class="col-12">
-            <label class="form-label">Género *</label>
-            <div class="radio-group">
-              <label class="radio-pill">
-                <input type="radio" name="genero" value="M"
-                       {% if inscrito.genero == 'M' or not inscrito %}required{% endif %}
-                       {% if inscrito.genero == 'M' %}checked{% endif %}>
-                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <circle cx="10" cy="14" r="5"/><path d="M19 5l-5.4 5.4M19 5h-5M19 5v5"/>
-                </svg>
-                Masculino
-              </label>
-              <label class="radio-pill">
-                <input type="radio" name="genero" value="F"
-                       {% if inscrito.genero == 'F' %}checked{% endif %}>
-                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="8" r="5"/><line x1="12" y1="13" x2="12" y2="21"/>
-                  <line x1="9" y1="18" x2="15" y2="18"/>
-                </svg>
-                Femenino
-              </label>
-            </div>
-          </div>
-
-          <div class="col-sm-6">
-            <label class="form-label">Teléfono *</label>
-            <input type="text" name="telefono" class="form-control"
-                   value="{{ inscrito.telefono|default:'' }}" placeholder="55 0000 0000" required>
-          </div>
-          <div class="col-sm-6">
-            <label class="form-label">Correo electrónico</label>
-            <input type="email" name="correo_electronico" class="form-control"
-                   value="{{ inscrito.correo_electronico|default:'' }}" placeholder="correo@ejemplo.com">
-          </div>
+      <div class="col-12">
+        <label class="form-label">Género <span style="color:#ef4444;">*</span></label>
+        <div class="radio-group">
+          <label class="radio-pill">
+            <input type="radio" name="genero" value="M" required
+                   {% if inscrito.genero == 'M' or not inscrito.genero %}checked{% endif %}>
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <circle cx="10" cy="14" r="5"/><path d="M19 5l-5.4 5.4M19 5h-5M19 5v5"/>
+            </svg>
+            Masculino
+          </label>
+          <label class="radio-pill">
+            <input type="radio" name="genero" value="F"
+                   {% if inscrito.genero == 'F' %}checked{% endif %}>
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="8" r="5"/>
+              <line x1="12" y1="13" x2="12" y2="21"/>
+              <line x1="9" y1="18" x2="15" y2="18"/>
+            </svg>
+            Femenino
+          </label>
         </div>
       </div>
 
-      <!-- Iglesia -->
-      <div class="card-section">
-        <div class="section-title">Información de iglesia</div>
-        <div class="row g-3">
-
-          <!-- Toggle otra denominación -->
-          <div class="col-12">
-            <label class="toggle-wrap">
-              <div class="switch">
-                <input type="checkbox" id="chk-otra" name="otra_denominacion" value="1"
-                       {% if inscrito.otra_denominacion %}checked{% endif %}>
-                <span class="switch-slider"></span>
-              </div>
-              <span style="font-size:14px; font-weight:500; color:#1e293b;">¿Otra denominación?</span>
-            </label>
-          </div>
-
-          <!-- Denominación (solo si otra_denominacion) -->
-          <div class="col-12" id="denom-field"
-               style="{% if not inscrito.otra_denominacion %}display:none;{% endif %}">
-            <label class="form-label">Nombre de la denominación</label>
-            <input type="text" name="denominacion" id="denominacion" class="form-control"
-                   value="{{ inscrito.denominacion|default:'' }}" placeholder="Ej. Bautista, Metodista...">
-          </div>
-
-          <!-- Zona / subzona (ocultos si otra denominación) -->
-          <div id="zona-group" class="col-12"
-               style="{% if inscrito.otra_denominacion %}display:none;{% endif %}">
-            <div class="row g-3">
-              <div class="col-sm-6">
-                <label class="form-label">Zona</label>
-                <select name="zona" id="zona" class="form-select">
-                  <option value="">Sin zona</option>
-                  {% for val, label in zonas %}
-                    <option value="{{ val }}" {% if inscrito.zona == val %}selected{% endif %}>{{ label }}</option>
-                  {% endfor %}
-                </select>
-              </div>
-              <div class="col-sm-6">
-                <label class="form-label">Subzona</label>
-                <input type="text" name="subzona" class="form-control"
-                       value="{{ inscrito.subzona|default:'' }}" placeholder="Opcional">
-              </div>
-            </div>
-          </div>
-
-          <div class="col-sm-6">
-            <label class="form-label">Iglesia</label>
-            <input type="text" name="iglesia" class="form-control"
-                   value="{{ inscrito.iglesia|default:'' }}" placeholder="Nombre de la iglesia">
-          </div>
-          <div class="col-sm-6">
-            <label class="form-label">Pastor</label>
-            <input type="text" name="pastor" class="form-control"
-                   value="{{ inscrito.pastor|default:'' }}" placeholder="Nombre del pastor">
-          </div>
-
-        </div>
+      <div class="col-sm-6">
+        <label class="form-label">Teléfono</label>
+        <input type="text" name="telefono" class="form-control"
+               value="{{ inscrito.telefono|default:'' }}"
+               placeholder="55 0000 0000">
+      </div>
+      <div class="col-sm-6">
+        <label class="form-label">Correo electrónico</label>
+        <input type="email" name="correo_electronico" class="form-control"
+               value="{{ inscrito.correo_electronico|default:'' }}"
+               placeholder="correo@ejemplo.com">
       </div>
 
     </div>
 
-    <!-- ── COLUMNA DERECHA ── -->
-    <div class="col-lg-6 d-flex flex-column gap-4">
-
-      <!-- Grado -->
-      <div class="card-section">
-        <div class="section-title">Grado / cargo eclesiástico</div>
-        <select name="grado" class="form-select" required>
-          <option value="">Seleccionar grado...</option>
-          {% for val, label in grados %}
-            <option value="{{ val }}" {% if inscrito.grado == val %}selected{% endif %}>{{ label }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <!-- Inscripción / pago -->
-      <div class="card-section">
-        <div class="section-title">Datos de inscripción</div>
-        <div class="row g-3">
-
-          <div class="col-12">
-            <label class="form-label">Periodo de pago *</label>
-            <select id="periodo-select" class="form-select" required>
-              <option value="">Selecciona un periodo...</option>
-              <option value="05 Ene - 07 Feb|1700"
-                {% if inscrito.periodo == '05 Ene - 07 Feb' %}selected{% endif %}>
-                05 Ene – 07 Feb — $1,700
-              </option>
-              <option value="08 Feb - 21 Mar|1900"
-                {% if inscrito.periodo == '08 Feb - 21 Mar' %}selected{% endif %}>
-                08 Feb – 21 Mar — $1,900
-              </option>
-              <option value="21 Mar - 13 Abr|2100"
-                {% if inscrito.periodo == '21 Mar - 13 Abr' %}selected{% endif %}>
-                21 Mar – 13 Abr — $2,100
-              </option>
-            </select>
-          </div>
-
-          <!-- Preview monto seleccionado -->
-          <div class="col-12" id="monto-preview-wrap" style="{% if not inscrito.monto %}display:none;{% endif %}">
-            <div style="display:flex; align-items:center; gap:10px;">
-              <span style="font-size:13px; color:#94a3b8;">Monto a pagar:</span>
-              <span class="monto-preview" id="monto-preview">
-                ${{ inscrito.monto|default:"0" }}
-              </span>
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      {% if editing and inscrito.qr_image %}
-      <!-- QR actual -->
-      <div class="card-section text-center">
-        <div class="section-title" style="text-align:left;">QR generado</div>
-        <img src="{{ inscrito.qr_image.url }}" alt="QR"
-             style="width:140px; height:140px; object-fit:contain; border-radius:10px; margin-bottom:10px;">
-        <div style="font-size:11px; color:#94a3b8; font-family:monospace;">{{ inscrito.codigo }}</div>
-        <a href="{% url 'cursos:inscripcion_qr' inscrito.pk %}" target="_blank"
-           style="display:inline-flex; align-items:center; gap:6px; margin-top:12px;
-                  padding:7px 14px; background:#f0fdf4; color:#16a34a;
-                  border-radius:9px; font-size:13px; font-weight:600; text-decoration:none;">
-          <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-          </svg>
-          Ver / imprimir QR
-        </a>
-      </div>
-      {% endif %}
-
-      <!-- Acciones -->
-      <div style="display:flex; align-items:center; gap:10px; justify-content:flex-end; flex-wrap:wrap;">
-        <a href="{% url 'cursos:inscripciones' %}" class="btn-secondary-action">
-          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-            <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
-          </svg>
-          Cancelar
-        </a>
-        <button type="submit" class="btn-primary-action">
-          <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-            {% if editing %}
-              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-              <polyline points="17 21 17 13 7 13 7 21"/>
-            {% else %}
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-            {% endif %}
-          </svg>
-          {% if editing %}Guardar cambios{% else %}Registrar inscrito{% endif %}
-        </button>
-      </div>
-
+    <!-- Acciones al pie -->
+    <div style="display:flex; align-items:center; gap:10px; margin-top:28px; flex-wrap:wrap;">
+      <a href="{% url 'cursos:inscripciones' %}" class="btn-secondary-action">
+        Cancelar
+      </a>
+      <button type="submit" class="btn-primary-action">
+        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          {% if editing %}
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+            <polyline points="17 21 17 13 7 13 7 21"/>
+          {% else %}
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          {% endif %}
+        </svg>
+        {% if editing %}Guardar cambios{% else %}Registrar inscrito{% endif %}
+      </button>
     </div>
-  </div>
-</form>
 
-{% endblock %}
+  </form>
+</div>
 
-{% block extra_js %}
-<script>
-  // ── OTRA DENOMINACIÓN ────────────────────────────────
-  const chkOtra    = document.getElementById('chk-otra');
-  const denomField = document.getElementById('denom-field');
-  const zonaGroup  = document.getElementById('zona-group');
-  const zona       = document.getElementById('zona');
-
-  function toggleDenom() {
-    const esOtra = chkOtra.checked;
-    denomField.style.display = esOtra ? '' : 'none';
-    zonaGroup.style.display  = esOtra ? 'none' : '';
-    zona.required = !esOtra;
-    document.getElementById('denominacion').required = esOtra;
-  }
-
-  chkOtra.addEventListener('change', toggleDenom);
-
-  // ── PERIODO + MONTO ──────────────────────────────────
-  const periodoSelect  = document.getElementById('periodo-select');
-  const hiddenPeriodo  = document.getElementById('hidden-periodo');
-  const hiddenMonto    = document.getElementById('hidden-monto');
-  const montoPreview   = document.getElementById('monto-preview');
-  const montoWrap      = document.getElementById('monto-preview-wrap');
-
-  periodoSelect.addEventListener('change', () => {
-    if (!periodoSelect.value) {
-      montoWrap.style.display = 'none';
-      return;
-    }
-    const [periodo, monto] = periodoSelect.value.split('|');
-    hiddenPeriodo.value = periodo;
-    hiddenMonto.value   = monto;
-    montoPreview.textContent = `$${parseInt(monto).toLocaleString('es-MX')}`;
-    montoWrap.style.display = '';
-  });
-
-  // Restaurar preview si viene con valor (edición)
-  {% if inscrito.monto %}
-    montoWrap.style.display = '';
-    montoPreview.textContent = '${{ inscrito.monto }}';
-  {% endif %}
-</script>
 {% endblock %}
