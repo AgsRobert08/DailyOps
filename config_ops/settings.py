@@ -7,7 +7,13 @@ SECRET_KEY = 'django-insecure-f+tw3^m)-sco4hvgq*p$bk+=2-%kvsudtc2#s*0+9vrx9kqxa#
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['18.188.10.113', 'ark-kos.com', 'www.ark-kos.com', 'miepi.ark-kos.com']
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://ark-kos.com',
+    'https://www.ark-kos.com',
+    'https://miepi.ark-kos.com',
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -50,7 +56,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config_ops.wsgi.application'
 
-# Base de datos — se sobreescribe en settings_local.py
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
@@ -91,9 +97,9 @@ EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST          = 'smtp.gmail.com'
 EMAIL_PORT          = 587
 EMAIL_USE_TLS       = True
-EMAIL_HOST_USER     = os.environ.get('EMAIL_HOST_USER',     'robert.agus.zba@gmail.com')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'onar mjhr vmgp xqxd')
-DEFAULT_FROM_EMAIL  = os.environ.get('EMAIL_HOST_USER',     'robert.agus.zba@gmail.com')
+EMAIL_HOST_USER     = os.environ.get('EMAIL_HOST_USER',     'serviceswebsoportepy@gmail.com')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'dzlz sjgz qxlx qtwb')
+DEFAULT_FROM_EMAIL  = os.environ.get('EMAIL_HOST_USER',     'serviceswebsoportepy@gmail.com')
 
 # ── WHATSAPP ──────────────────────────────────────────────
 WHATSAPP_PROVIDER  = 'twilio'
