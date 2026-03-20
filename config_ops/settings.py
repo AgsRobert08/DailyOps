@@ -6,8 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-f+tw3^m)-sco4hvgq*p$bk+=2-%kvsudtc2#s*0+9vrx9kqxa#'
 
 DEBUG = True
-
-ALLOWED_HOSTS = ['18.188.10.113', 'ark-kos.com', 'www.ark-kos.com', 'miepi.ark-kos.com']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost','18.188.10.113','ark-kos.com', 'www.ark-kos.com', 'miepi.ark-kos.com']
 
 CSRF_TRUSTED_ORIGINS = [
     'https://ark-kos.com',
@@ -98,7 +97,7 @@ EMAIL_HOST          = 'smtp.gmail.com'
 EMAIL_PORT          = 587
 EMAIL_USE_TLS       = True
 EMAIL_HOST_USER     = os.environ.get('EMAIL_HOST_USER',     'serviceswebsoportepy@gmail.com')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'dzlz sjgz qxlx qtwb')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', 'kqkb wmui rioj lhny')
 DEFAULT_FROM_EMAIL  = os.environ.get('EMAIL_HOST_USER',     'serviceswebsoportepy@gmail.com')
 
 # ── WHATSAPP ──────────────────────────────────────────────
