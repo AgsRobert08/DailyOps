@@ -1,0 +1,150 @@
+{% extends "whatsapp/base_wa.html" %}
+
+{% block title %}{{ conversation.contact }} — WhatsApp{% endblock %}
+{% block page_title %}WhatsApp — {{ conversation.contact.name|default:conversation.contact.phone }}{% endblock %}
+
+{% block wa_chat %}
+{# Sobreescribe el panel derecho con el chat real #}
+
+<div class="wa-chat-header">
+  <div class="wa-avatar">{{ conversation.contact.avatar_initials }}</div>
+  <div class="wa-chat-header-info">
+    <h3>{{ conversation.contact.name|default:conversation.contact.phone }}</h3>
+    <p>{{ conversation.contact.phone }}</p>
+  </div>
+</div>
+
+<div class="wa-messages" id="wa-messages">
+  {% for msg in messages %}
+
+  {% if forloop.first %}
+  <div class="wa-date-sep"><span>{{ msg.timestamp|date:"d \d\e F Y" }}</span></div>
+  {% endif %}
+
+  <div class="wa-msg-row {{ msg.direction }}" data-msg-id="{{ msg.id }}">
+    <div class="wa-bubble">
+      {{ msg.body|linebreaksbr }}
+      <div class="wa-bubble-meta">
+        <span class="wa-bubble-time">{{ msg.timestamp|date:"H:i" }}</span>
+        {% if msg.direction == "outbound" %}
+        <span class="wa-tick {{ msg.status }}">
+          {% if msg.status == "read" %}✓✓
+          {% elif msg.status == "delivered" %}✓✓
+          {% elif msg.status == "sent" %}✓
+          {% elif msg.status == "failed" %}✗
+          {% else %}…{% endif %}
+        </span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% empty %}
+  <div style="text-align:center; color:var(--wa-muted); font-size:13px; margin-top:60px;">
+    Aún no hay mensajes. Cuando el cliente escriba aparecerán aquí.
+  </div>
+  {% endfor %}
+</div>
+
+<div class="wa-input-area">
+  <textarea id="wa-msg-input" placeholder="Escribe un mensaje..." rows="1"></textarea>
+  <button class="wa-send-btn" id="wa-send-btn">
+    <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+  </button>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const SEND_URL = "{% url 'whatsapp:send_message' conversation.id %}";
+const POLL_URL = "{% url 'whatsapp:poll_messages' conversation.id %}";
+const CSRF     = "{{ csrf_token }}";
+
+const messagesEl = document.getElementById("wa-messages");
+const inputEl    = document.getElementById("wa-msg-input");
+const sendBtn    = document.getElementById("wa-send-btn");
+
+// Scroll al fondo
+function scrollBottom() { messagesEl.scrollTop = messagesEl.scrollHeight; }
+scrollBottom();
+
+// Auto-resize textarea
+inputEl.addEventListener("input", () => {
+  inputEl.style.height = "auto";
+  inputEl.style.height = Math.min(inputEl.scrollHeight, 120) + "px";
+});
+
+// Enter envía, Shift+Enter = nueva línea
+inputEl.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+sendBtn.addEventListener("click", sendMessage);
+
+async function sendMessage() {
+  const body = inputEl.value.trim();
+  if (!body) return;
+  sendBtn.disabled = true;
+  inputEl.value = "";
+  inputEl.style.height = "auto";
+
+  try {
+    const res  = await fetch(SEND_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-CSRFToken": CSRF },
+      body: JSON.stringify({ body }),
+    });
+    const data = await res.json();
+    if (res.ok) appendMessage(data);
+    else        alert("Error: " + (data.error || "No se pudo enviar"));
+  } catch(e) {
+    alert("Error de conexión");
+  } finally {
+    sendBtn.disabled = false;
+    inputEl.focus();
+  }
+}
+
+function appendMessage(msg) {
+  const row = document.createElement("div");
+  row.className = `wa-msg-row ${msg.direction}`;
+  row.dataset.msgId = msg.id;
+  row.innerHTML = `
+    <div class="wa-bubble">
+      ${escapeHtml(msg.body)}
+      <div class="wa-bubble-meta">
+        <span class="wa-bubble-time">${msg.timestamp}</span>
+        <span class="wa-tick ${msg.status}">${tickIcon(msg.status)}</span>
+      </div>
+    </div>`;
+  messagesEl.appendChild(row);
+  scrollBottom();
+}
+
+function tickIcon(s) {
+  return { read:"✓✓", delivered:"✓✓", sent:"✓", failed:"✗", sending:"…" }[s] || "…";
+}
+
+function escapeHtml(t) {
+  return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>");
+}
+
+// ── Polling cada 5 segundos ──
+let lastId = {{ messages.last.id|default:0 }};
+
+async function poll() {
+  try {
+    const res  = await fetch(`${POLL_URL}?after=${lastId}`);
+    const data = await res.json();
+    for (const msg of data.messages) {
+      if (!messagesEl.querySelector(`[data-msg-id="${msg.id}"]`)) {
+        appendMessage(msg);
+        lastId = Math.max(lastId, msg.id);
+      }
+    }
+  } catch(e) { /* silencioso */ }
+}
+
+setInterval(poll, 5000);
+</script>
+{% endblock %}

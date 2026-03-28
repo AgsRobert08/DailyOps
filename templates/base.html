@@ -5,433 +5,548 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}{{ company.name|default:"Sistema" }}{% endblock %}</title>
+
+  {% if company.favicon_url %}
+    <link rel="icon" type="image/png" href="{{ company.favicon_url }}">
+    <link rel="apple-touch-icon" href="{{ company.favicon_url }}">
+  {% endif %}
+
+  <meta name="theme-color" content="{{ company.primary_color|default:'#303854' }}">
+  <meta property="og:title" content="{{ company.name|default:'Sistema' }}">
+  {% if company.favicon_url %}
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{{ company.favicon_url }}">
+  {% endif %}
+
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
     :root {
-      --color-primary: {{ company.primary_color|default:"#b91085" }};
-      --color-bg:      {{ company.background_color|default:"#f8fafc" }};
-      --sidebar-width: 260px;
-      --transition:    0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      --radius:        12px;
+      --color-primary:   {{ company.primary_color|default:"#303854" }};
+      --color-secondary: {{ company.secondary_color|default:"#C2CDD5" }};
+      --color-bg:        {{ company.background_color|default:"#f8fafc" }};
+      --sw:   240px;
+      --sw-m:  64px;
+      --ease: 0.25s cubic-bezier(0.4,0,0.2,1);
+      --r:    10px;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Outfit', sans-serif; background-color: var(--color-bg); overflow-x: hidden; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--color-bg); overflow-x: hidden; }
 
-    /* ── SIDEBAR ── */
+    /* ══════════════════
+       SIDEBAR
+    ══════════════════ */
     .sidebar {
-      width: var(--sidebar-width);
+      width: var(--sw);
       background: var(--color-primary);
       height: 100vh;
-      position: fixed;
-      left: 0; top: 0;
+      position: fixed; left: 0; top: 0;
       z-index: 1050;
-      transition: transform var(--transition);
-      display: flex;
-      flex-direction: column;
-      box-shadow: 4px 0 15px rgba(0,0,0,0.05);
+      display: flex; flex-direction: column;
+      transition: width var(--ease);
+      overflow: visible; /* para tooltips */
     }
 
+    /* ── Header ── */
     .sidebar-header {
-      padding: 12px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      min-height: 60px;
-      flex-shrink: 0;
+      height: 64px; flex-shrink: 0;
+      display: flex; align-items: center;
+      padding: 0 14px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      gap: 10px; overflow: hidden;
+      position: relative;
     }
 
-    .brand-img {
-      width: 120px;
-      height: 48px;
-      object-fit: contain;
+  /* REEMPLAZA .brand-icon */
+.brand-icon {
+  width: 180px; height: 48px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: transparent;
+}
+.brand-icon img { width: 100%; height: 100%; object-fit: contain; }
+.brand-icon span { font-size: 14px; font-weight: 700; color: white; }
+    .brand-text {
+      flex: 1; overflow: hidden;
+      transition: opacity var(--ease), max-width var(--ease);
+      max-width: 200px; opacity: 1;
     }
+    .brand-name  { font-size: 13px; font-weight: 600; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+    .brand-slogan { font-size: 11px; color: rgba(255,255,255,.4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
 
-    .brand-placeholder {
-      width: 38px; height: 38px;
-      border-radius: 8px;
-      background: rgba(255,255,255,0.15);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 17px; font-weight: 700; color: white;
-    }
+    /* ── Botón toggle dentro del header ── */
+    /* btn-collapse vive en el topbar */
+  /* REEMPLAZA .btn-collapse */
+.btn-collapse {
+  display: flex; align-items: center; justify-content: center;
+  width: 34px; height: 34px; border-radius: 8px;
+  background: none; border: none;
+  color: #94a3b8; cursor: pointer;
+  transition: background .15s, color .15s;
+  flex-shrink: 0;
+}
+.btn-collapse:hover { background: #f1f5f9; color: var(--color-primary); }
+.btn-collapse svg { transition: transform var(--ease); }
+.btn-collapse.is-mini svg { transform: rotate(180deg); }
+.btn-collapse { display: flex; }
 
-    /* ── NAV ── */
+    /* ── Nav ── */
     .sidebar-nav {
-      flex: 1;
-      padding: 10px 15px;
-      overflow-y: auto;
-      /* Scrollbar sutil */
+      flex: 1; padding: 8px 10px;
+      overflow-y: auto; overflow-x: hidden;
       scrollbar-width: thin;
-      scrollbar-color: rgba(255,255,255,0.15) transparent;
+      scrollbar-color: rgba(255,255,255,.1) transparent;
     }
-    .sidebar-nav::-webkit-scrollbar { width: 4px; }
-    .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 4px; }
+    .sidebar-nav::-webkit-scrollbar { width: 3px; }
+    .sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 3px; }
 
     .nav-label {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 1.2px;
-      color: rgba(255,255,255,0.4);
-      margin: 18px 0 8px 12px;
-      display: block;
+      font-size: 10px; text-transform: uppercase;
+      letter-spacing: .12em; color: rgba(255,255,255,.3);
+      margin: 16px 0 4px 8px;
+      white-space: nowrap;
+      transition: opacity var(--ease), max-height var(--ease);
+      display: block; max-height: 30px; opacity: 1;
+      overflow: hidden;
     }
 
     .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 11px 16px;
-      color: rgba(255,255,255,0.7);
-      text-decoration: none;
-      border-radius: var(--radius);
+      display: flex; align-items: center;
+      padding: 8px 10px; gap: 10px;
+      color: rgba(255,255,255,.55);
+      text-decoration: none; border-radius: var(--r);
       margin-bottom: 2px;
-      transition: background 0.15s, color 0.15s;
-      font-size: 14px;
-      font-weight: 500;
-      /* Asegura que sea clickeable en móvil */
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
+      font-size: 13.5px; font-weight: 400;
+      cursor: pointer; white-space: nowrap;
+      transition: color .15s, background .15s;
       position: relative;
-      z-index: 1;
+    }
+.nav-item:hover { color: var(--color-secondary); background: transparent; }
+    .nav-item.active { color: var(--color-secondary); font-weight: 500; background: transparent; }
+
+    .nav-icon { width: 18px; height: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+    .nav-icon svg { width: 18px; height: 18px; }
+
+    .nav-text {
+      flex: 1; overflow: hidden; text-overflow: ellipsis;
+      transition: opacity var(--ease), max-width var(--ease);
+      max-width: 200px; opacity: 1;
     }
 
-    .nav-item:hover { background: rgba(255,255,255,0.12); color: white; }
-    .nav-item.active { background: rgba(255,255,255,0.18); color: white; }
-    .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+    .nav-chevron {
+      flex-shrink: 0; color: rgba(255,255,255,.25);
+      transition: opacity var(--ease), color .15s;
+      display: flex; align-items: center;
+    }
+    .nav-item:hover .nav-chevron { color: rgba(255,255,255,.5); }
+    .nav-item.active .nav-chevron { color: var(--color-secondary); opacity: .6; }
 
-    /* ── SIDEBAR FOOTER ── */
-    .sidebar-footer {
-      padding: 12px 15px;
-      border-top: 1px solid rgba(255,255,255,0.1);
-      flex-shrink: 0;
+    /* ── Tooltip en modo mini ── */
+    .nav-item .nav-tooltip {
+      position: absolute;
+      left: calc(var(--sw-m) - 4px);
+      top: 50%; transform: translateY(-50%);
+      background: #1e293b; color: white;
+      font-size: 12px; font-weight: 500;
+      padding: 6px 12px; border-radius: 8px;
+      white-space: nowrap; pointer-events: none;
+      opacity: 0; transition: opacity .15s;
+      z-index: 2000;
+      box-shadow: 0 4px 14px rgba(0,0,0,.2);
+    }
+    .nav-item .nav-tooltip::before {
+      content: '';
+      position: absolute; right: 100%; top: 50%;
+      transform: translateY(-50%);
+      border: 5px solid transparent;
+      border-right-color: #1e293b;
     }
 
-    .sidebar-footer .nav-item {
-      color: rgba(255,255,255,0.5);
-      font-size: 13px;
-    }
+    /* ══════════════════
+       ESTADO COLAPSADO
+    ══════════════════ */
+    .sidebar.mini { width: var(--sw-m); overflow: visible; }
 
-    /* ── MAIN ── */
+    .sidebar.mini .brand-text { max-width: 0; opacity: 0; overflow: hidden; }
+    .sidebar.mini .btn-collapse svg { transform: rotate(180deg); }
+    .sidebar.mini .nav-label { max-height: 0; opacity: 0; margin: 6px 0 0; }
+    .sidebar.mini .nav-text { max-width: 0; opacity: 0; overflow: hidden; }
+    .sidebar.mini .nav-chevron { max-width: 0; opacity: 0; overflow: hidden; }
+  .sidebar.mini .nav-item .nav-tooltip { opacity: 0; }
+.sidebar.mini .nav-item:hover .nav-tooltip { opacity: 1; }
+/* AGREGA esto al bloque .sidebar.mini */
+.sidebar.mini .brand-icon { width: 36px; height: 36px; background: transparent; }
+.sidebar.mini .brand-icon img {
+  content: "{% if company.logo_small %}{{ company.logo_small.url }}{% endif %}";
+}
+    /* ══════════════════
+       MAIN
+    ══════════════════ */
     .main-wrapper {
-      margin-left: var(--sidebar-width);
+      margin-left: var(--sw);
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      transition: margin var(--transition);
+      display: flex; flex-direction: column;
+      transition: margin var(--ease);
     }
+    .main-wrapper.mini { margin-left: var(--sw-m); }
 
     .topbar {
-      height: 64px;
-      background: white;
+      height: 64px; background: white;
       padding: 0 28px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0; z-index: 900;
-      border-bottom: 1px solid #f1f5f9;
-      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 900;
+      border-bottom: 1px solid #f1f5f9; flex-shrink: 0;
     }
 
-    .btn-toggle {
-      display: none;
-      background: none; border: none;
-      color: var(--color-primary);
-      cursor: pointer; padding: 4px;
+    .btn-toggle-mobile {
+      display: none; background: none; border: none;
+      color: var(--color-primary); cursor: pointer; padding: 4px;
     }
+
+    .btn-sidebar-toggle {
+      background: none; border: none;
+      color: #94a3b8; cursor: pointer; padding: 6px;
+      border-radius: 8px; transition: background .15s, color .15s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .btn-sidebar-toggle:hover { background: #f1f5f9; color: var(--color-primary); }
+
+    .topbar-title { font-size: 15px; font-weight: 600; color: #1e293b; }
 
     .user-profile-btn {
       display: flex; align-items: center; gap: 12px;
-      background: none; border: none;
-      padding: 5px; cursor: pointer;
+      background: none; border: none; padding: 5px; cursor: pointer;
     }
-
     .user-avatar {
-      width: 38px; height: 38px;
-      border-radius: 50%;
-      background: var(--color-primary);
-      color: white;
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--color-primary); color: white;
       display: flex; align-items: center; justify-content: center;
-      font-weight: 600; font-size: 14px;
-      overflow: hidden; flex-shrink: 0;
+      font-weight: 600; font-size: 13px; overflow: hidden; flex-shrink: 0;
     }
     .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
-
     .user-info-text { text-align: right; }
-    .user-info-text .user-name { display: block; font-size: 14px; font-weight: 600; color: #334155; }
-    .user-info-text .user-role  { font-size: 12px; color: #94a3b8; }
+    .user-info-text .user-name { display: block; font-size: 13px; font-weight: 600; color: #334155; }
+    .user-info-text .user-role { font-size: 11px; color: #94a3b8; }
 
-    /* ── CONTENIDO ── */
-    .main-content {
-      flex: 1;
-      padding: 24px 28px;
-    }
+    .main-content { flex: 1; padding: 24px 28px; }
 
-    /* ── FOOTER ── */
     .main-footer {
-      background: white;
-      border-top: 1px solid #f1f5f9;
+      background: white; border-top: 1px solid #f1f5f9;
       padding: 14px 28px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 8px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 8px;
     }
+    .footer-left { font-size: 12px; color: #94a3b8; }
+    .footer-left strong { color: var(--color-primary); font-weight: 600; }
+    .footer-right { font-size: 12px; color: #cbd5e1; }
 
-    .footer-left {
-      font-size: 12px;
-      color: #94a3b8;
-    }
-
-    .footer-left strong {
-      color: var(--color-primary);
-      font-weight: 600;
-    }
-
-    .footer-right {
-      font-size: 12px;
-      color: #cbd5e1;
-    }
-
-    /* ── OVERLAY MÓVIL ── */
+    /* Overlay móvil */
     .sidebar-overlay {
-      display: none;
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 1049; /* justo debajo del sidebar */
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.5); z-index: 1049;
     }
     .sidebar-overlay.show { display: block; }
 
     /* ── RESPONSIVE ── */
     @media (max-width: 992px) {
-      .sidebar { transform: translateX(-100%); }
-      .sidebar.show { transform: translateX(0); }
-      .main-wrapper { margin-left: 0; }
-      .btn-toggle { display: flex; }
+      .sidebar { transform: translateX(-100%); width: var(--sw) !important; transition: transform var(--ease); }
+      .sidebar.mobile-open { transform: translateX(0); }
+      .main-wrapper, .main-wrapper.mini { margin-left: 0; }
+      .btn-toggle-mobile { display: flex; }
+      .btn-collapse { display: none; }
       .topbar { padding: 0 16px; }
       .main-content { padding: 16px; }
       .main-footer { padding: 12px 16px; }
+      /* En móvil siempre expandido */
+      .sidebar .brand-text { max-width: 200px !important; opacity: 1 !important; }
+      .sidebar .nav-label { max-height: 30px !important; opacity: 1 !important; margin: 16px 0 4px 8px !important; }
+      .sidebar .nav-text { max-width: 200px !important; opacity: 1 !important; }
+      .sidebar .nav-chevron { max-width: 40px !important; opacity: 1 !important; }
+      .sidebar .nav-item { justify-content: flex-start !important; padding: 8px 10px !important; }
+      .sidebar .nav-item .nav-tooltip { display: none !important; }
     }
   </style>
   {% block extra_css %}{% endblock %}
 </head>
 <body>
 
-  <!-- Overlay — solo cubre el fondo, NO el sidebar -->
-  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-  <aside class="sidebar" id="mainSidebar">
+<aside class="sidebar" id="mainSidebar">
 
-    <div class="sidebar-header">
-      {% if company.logo %}
-        <img src="{{ company.logo.url }}" alt="{{ company.name }}" class="brand-img">
-      {% else %}
-        <div class="brand-placeholder">
-          {{ company.name|default:"S"|slice:":1"|upper }}
-        </div>
-      {% endif %}
+  <!-- Header con botón colapsar -->
+  
+     <!-- REEMPLAZA el sidebar-header completo -->
+<div class="sidebar-header">
+ <!-- REEMPLAZA la brand-icon dentro del sidebar-header -->
+<div class="brand-icon" id="brandIcon">
+  {% if company.logo %}
+    <img src="{{ company.logo.url }}" id="brandLogoFull" alt="">
+  {% endif %}
+  {% if company.logo_small %}
+    <img src="{{ company.logo_small.url }}" id="brandLogoMini" style="display:none;" alt="">
+  {% else %}
+    <span id="brandLogoMini" style="display:none; font-size:14px; font-weight:700; color:white;">
+      {{ company.name|default:"S"|slice:":1"|upper }}
+    </span>
+  {% endif %}
+</div>
+</div>
+
+  <!-- Nav -->
+  <nav class="sidebar-nav">
+
+    <span class="nav-label">Principal</span>
+    <a href="{% url 'company:dashboard' %}"
+       class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+      <span class="nav-icon">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+        </svg>
+      </span>
+      <span class="nav-text">Inicio</span>
+      <span class="nav-chevron"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></span>
+      <span class="nav-tooltip">Inicio</span>
+    </a>
+
+    {% if not request.user.is_operador %}
+    <span class="nav-label">Gestión</span>
+    <a href="{% url 'company:users_list' %}"
+       class="nav-item {% if 'user' in request.resolver_match.url_name %}active{% endif %}">
+      <span class="nav-icon">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+        </svg>
+      </span>
+      <span class="nav-text">Usuarios</span>
+      <span class="nav-chevron"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></span>
+      <span class="nav-tooltip">Usuarios</span>
+    </a>
+    {% endif %}
+
+    <span class="nav-label">Cursos</span>
+    <a href="{% url 'cursos:inscripciones' %}"
+       class="nav-item {% if request.resolver_match.namespace == 'cursos' and 'inscripcion' in request.resolver_match.url_name %}active{% endif %}">
+      <span class="nav-icon">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+      </span>
+      <span class="nav-text">Inscripciones</span>
+      <span class="nav-chevron"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></span>
+      <span class="nav-tooltip">Inscripciones</span>
+    </a>
+
+    <a href="{% url 'cursos:asistencia' %}"
+       class="nav-item {% if request.resolver_match.namespace == 'cursos' and 'asistencia' in request.resolver_match.url_name %}active{% endif %}">
+      <span class="nav-icon">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+      </span>
+      <span class="nav-text">Asistencia</span>
+      <span class="nav-chevron"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></span>
+      <span class="nav-tooltip">Asistencia</span>
+    </a>
+
+<span class="nav-label">Herramientas</span>
+
+    {% if not request.user.is_operador %}
+    <a href="{% url 'whatsapp:inbox' %}"
+       class="nav-item {% if request.resolver_match.namespace == 'whatsapp' or 'whatsapp' in request.resolver_match.url_name %}active{% endif %}">
+      <span class="nav-icon">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+        </svg>
+      </span>
+      <span class="nav-text">WhatsApp</span>
+      <span class="nav-chevron"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></span>
+      <span class="nav-tooltip">WhatsApp</span>
+    </a>
+
+    <a href="{% url 'company:calendar_view' %}"
+       class="nav-item {% if 'calendar' in request.resolver_match.url_name %}active{% endif %}">
+      <span class="nav-icon">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+        </svg>
+      </span>
+      <span class="nav-text">Calendario</span>
+      <span class="nav-chevron">
+        <svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <polyline points="9 18 15 12 9 6"/>
+        </svg>
+      </span>
+      <span class="nav-tooltip">Calendario</span>
+    </a>
+    {% endif %}
+
+
+    {% if not request.user.is_operador %}
+    <span class="nav-label">Sistema</span>
+    <a href="{% url 'company:company_settings' %}"
+       class="nav-item {% if request.resolver_match.url_name == 'company_settings' %}active{% endif %}">
+      <span class="nav-icon">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+      </span>
+      <span class="nav-text">Configuración</span>
+      <span class="nav-chevron"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></span>
+      <span class="nav-tooltip">Configuración</span>
+    </a>
+    {% endif %}
+
+  </nav>
+
+</aside>
+
+<!-- MAIN -->
+<div class="main-wrapper" id="mainWrapper">
+
+  <header class="topbar">
+    <button class="btn-toggle-mobile" id="btnMobile">
+      <svg width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+    </button>
+
+   <!-- REEMPLAZA el svg dentro del btn-collapse -->
+<button class="btn-collapse" id="btnCollapse" title="Colapsar menú">
+  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="black" stroke-width="3">
+    <polyline points="15 18 9 12 15 6"/>
+  </svg>
+</button>
+
+    <div class="topbar-title d-none d-md-block">
+      {% block page_title %}{% endblock %}
     </div>
 
-    <nav class="sidebar-nav">
-
-      <span class="nav-label">Principal</span>
-      <a href="{% url 'company:dashboard' %}"
-         class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6z
-               M14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6z
-               M4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2z
-               M14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
-        </svg>
-        <span>Inicio</span>
-      </a>
-
-      {% if not request.user.is_operador %}
-      <span class="nav-label">Gestión</span>
-      <a href="{% url 'company:users_list' %}"
-         class="nav-item {% if 'user' in request.resolver_match.url_name %}active{% endif %}">
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-        </svg>
-        <span>Usuarios</span>
-      </a>
-    {% endif %}
-      <span class="nav-label">Cursos</span>
-      <a href="{% url 'cursos:inscripciones' %}"
-         class="nav-item {% if request.resolver_match.namespace == 'cursos' and 'inscripcion' in request.resolver_match.url_name %}active{% endif %}">
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2
-               M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-        </svg>
-        <span>Inscripciones</span>
-      </a>
-
-      <a href="{% url 'cursos:asistencia' %}"
-         class="nav-item {% if request.resolver_match.namespace == 'cursos' and 'asistencia' in request.resolver_match.url_name %}active{% endif %}">
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-        </svg>
-        <span>Asistencia</span>
-      </a>
-      {% if not request.user.is_operador %}
-      <span class="nav-label">Comunicación</span>
-      <a href="{% url 'cursos:whatsapp_historial' %}"
-         class="nav-item {% if request.resolver_match.namespace == 'cursos' and 'whatsapp' in request.resolver_match.url_name %}active{% endif %}">
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M8 12h.01M12 12h.01M16 12h.01
-               M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949
-               L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12
-               c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
-        </svg>
-        <span>WhatsApp</span>
-      </a>
-      {% endif %}
-
-      {% if not request.user.is_operador %}
-      <span class="nav-label">Sistema</span>
-      <a href="{% url 'company:company_settings' %}"
-         class="nav-item {% if request.resolver_match.url_name == 'company_settings' %}active{% endif %}">
-        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066
-               c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572
-               c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573
-               c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065
-               c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066
-               c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572
-               c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573
-               c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-        </svg>
-        <span>Configuración</span>
-      </a>
-    {% endif %}
-
-    </nav>
-
- 
-
-  </aside>
-
-  <div class="main-wrapper">
-
-    <header class="topbar">
-      <button class="btn-toggle" id="toggleSidebar">
-        <svg width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-          <path d="M4 6h16M4 12h16M4 18h16"/>
-        </svg>
+    <div class="dropdown">
+      <button class="user-profile-btn dropdown-toggle" type="button"
+              id="profileMenu" data-bs-toggle="dropdown" aria-expanded="false">
+        <div class="user-info-text d-none d-sm-block">
+          <span class="user-name">{{ request.user.get_full_name|default:request.user.username }}</span>
+          <span class="user-role">{% if request.user.is_superuser %}Admin{% else %}Usuario{% endif %}</span>
+        </div>
+        <div class="user-avatar">
+          {% if request.user.profile_photo %}
+            <img src="{{ request.user.profile_photo.url }}" alt="">
+          {% else %}
+            {{ request.user.username|slice:":1"|upper }}
+          {% endif %}
+        </div>
       </button>
+      <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2"
+          aria-labelledby="profileMenu" style="border-radius:12px; min-width:200px;">
+        <li><h6 class="dropdown-header">Mi Cuenta</h6></li>
+        <li><a class="dropdown-item rounded-3" href="#">Perfil</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li>
+          <a class="dropdown-item rounded-3 text-danger d-flex align-items-center gap-2"
+             href="{% url 'company:logout' %}">
+            <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Cerrar sesión
+          </a>
+        </li>
+      </ul>
+    </div>
+  </header>
 
-      <div class="d-none d-md-block" style="font-size:16px; font-weight:600; color:#1e293b;">
-        {% block page_title %}Panel Central{% endblock %}
-      </div>
+  <main class="main-content">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
 
-      <div class="dropdown">
-        <button class="user-profile-btn dropdown-toggle" type="button"
-                id="profileMenu" data-bs-toggle="dropdown" aria-expanded="false">
-          <div class="user-info-text d-none d-sm-block">
-            <span class="user-name">{{ request.user.get_full_name|default:request.user.username }}</span>
-            <span class="user-role">{% if request.user.is_superuser %}Admin{% else %}Usuario{% endif %}</span>
-          </div>
-          <div class="user-avatar">
-            {% if request.user.profile_photo %}
-              <img src="{{ request.user.profile_photo.url }}" alt="">
-            {% else %}
-              {{ request.user.username|slice:":1"|upper }}
-            {% endif %}
-          </div>
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2"
-            aria-labelledby="profileMenu"
-            style="border-radius:12px; min-width:200px;">
-          <li><h6 class="dropdown-header">Mi Cuenta</h6></li>
-          <li><a class="dropdown-item rounded-3" href="#">Perfil</a></li>
-          <li><hr class="dropdown-divider"></li>
-          <li>
-            <a class="dropdown-item rounded-3 text-danger d-flex align-items-center"
-               href="{% url 'company:logout' %}">
-              <svg class="me-2" width="16" height="16" fill="none" viewBox="0 0 24 24"
-                   stroke="currentColor" stroke-width="2">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
-                <polyline points="16 17 21 12 16 7"/>
-                <line x1="21" y1="12" x2="9" y2="12"/>
-              </svg>
-              Cerrar sesión
-            </a>
-          </li>
-        </ul>
-      </div>
-    </header>
+  <footer class="main-footer">
+    <div class="footer-left">
+      <strong>{{ company.name|default:"Sistema" }}</strong>
+      &nbsp;·&nbsp; Panel de administración
+    </div>
+    <div class="footer-right">
+      Desarrollado por <strong style="color:#64748b;">DailyOps</strong>
+    </div>
+  </footer>
 
-    <main class="main-content">
-      {% if messages %}
-        {% for message in messages %}
-          <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert">
-            {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-          </div>
-        {% endfor %}
-      {% endif %}
-      {% block content %}{% endblock %}
-    </main>
+</div>
 
-    <!-- Footer -->
-    <footer class="main-footer">
-      <div class="footer-left">
-        <strong>{{ company.name|default:"Sistema" }}</strong>
-        &nbsp;·&nbsp; Panel de administración
-      </div>
-      <div class="footer-right">
-        Desarrollado por <strong style="color:#64748b;">DailyOps</strong>
-      </div>
-    </footer>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
+<script>
+  const sidebar  = document.getElementById('mainSidebar');
+  const wrapper  = document.getElementById('mainWrapper');
+  const overlay  = document.getElementById('sidebarOverlay');
+  const btnC     = document.getElementById('btnCollapse');
+  const btnM     = document.getElementById('btnMobile');
 
-  </div>
+  // ── COLAPSAR DESKTOP ─────────────────────────────────
+  let mini = localStorage.getItem('sb_mini') === '1';
 
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
-
-  <script>
-    const btnToggle = document.getElementById('toggleSidebar');
-    const sidebar   = document.getElementById('mainSidebar');
-    const overlay   = document.getElementById('sidebarOverlay');
-
-    function openSidebar() {
-      sidebar.classList.add('show');
-      overlay.classList.add('show');
+  function applyMini(animate) {
+    if (!animate) {
+      sidebar.style.transition = 'none';
+      wrapper.style.transition = 'none';
     }
-
-    function closeSidebar() {
-      sidebar.classList.remove('show');
-      overlay.classList.remove('show');
-    }
-
-    btnToggle.addEventListener('click', openSidebar);
-
-    // El overlay cierra — pero los clics EN el sidebar no se propagan al overlay
-    overlay.addEventListener('click', closeSidebar);
-
-    // En móvil: cerrar al navegar (clic en nav-item)
-    // Usamos un pequeño delay para que la navegación ocurra primero
-    sidebar.querySelectorAll('.nav-item').forEach(item => {
-      item.addEventListener('click', () => {
-        if (window.innerWidth <= 992) {
-          setTimeout(closeSidebar, 150);
-        }
-      });
+    sidebar.classList.toggle('mini', mini);
+    wrapper.classList.toggle('mini', mini);
+    if (!animate) requestAnimationFrame(() => {
+      sidebar.style.transition = '';
+      wrapper.style.transition = '';
     });
-  </script>
+      const full = document.getElementById('brandLogoFull');
+  const mini_ = document.getElementById('brandLogoMini');
+  if (full)  full.style.display  = mini ? 'none' : '';
+  if (mini_) mini_.style.display = mini ? '' : 'none';
+  }
 
-  {% block extra_js %}{% endblock %}
+  applyMini(false);
+
+  btnC.addEventListener('click', () => {
+    mini = !mini;
+    localStorage.setItem('sb_mini', mini ? '1' : '0');
+    applyMini(true);
+    btnC.classList.toggle('is-mini', mini);
+  });
+
+  // Aplicar clase is-mini al cargar
+  if (mini) btnC.classList.add('is-mini');
+
+  // ── MÓVIL ─────────────────────────────────────────────
+  btnM.addEventListener('click', () => {
+    sidebar.classList.add('mobile-open');
+    overlay.classList.add('show');
+  });
+
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('mobile-open');
+    overlay.classList.remove('show');
+  });
+
+  sidebar.querySelectorAll('.nav-item').forEach(el => {
+    el.addEventListener('click', () => {
+      if (window.innerWidth <= 992) {
+        setTimeout(() => {
+          sidebar.classList.remove('mobile-open');
+          overlay.classList.remove('show');
+        }, 150);
+      }
+    });
+  });
+</script>
+
+{% block extra_js %}{% endblock %}
 </body>
 </html>

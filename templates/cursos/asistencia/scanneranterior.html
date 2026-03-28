@@ -1,5 +1,6 @@
 {% extends "base.html" %}
-{% block title %}Escanear asistencia - {{ company.name }}{% endblock %}
+{% block title %}Escanear asistencia — {{ company.name }}{% endblock %}
+{% block page_title %}Escanear asistencia{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -53,12 +54,15 @@
   }
 
   /* ── ESCÁNER INALÁMBRICO ── */
-  .scanner-input-wrap { position:relative; }
+  .scanner-input-wrap {
+    position:relative;
+  }
   .scanner-hw-input {
     width:100%; padding:14px 16px 14px 44px;
     border:2px solid #e8edf2; border-radius:12px;
     font-size:15px; font-family:'Outfit',sans-serif; color:#1e293b;
-    outline:none; transition:border-color .2s, box-shadow .2s; background:white;
+    outline:none; transition:border-color .2s, box-shadow .2s;
+    background:white;
   }
   .scanner-hw-input:focus {
     border-color:var(--color-primary);
@@ -166,42 +170,7 @@
   .toast.warning { border-left:4px solid #d97706; }
   .toast.error   { border-left:4px solid #dc2626; }
 
-  /* ── DEBUG PANEL ── */
-  .debug-panel {
-    margin-top:16px; background:#0f172a; border-radius:10px;
-    padding:14px 16px; font-family:monospace; font-size:12px; color:#94a3b8;
-  }
-  .debug-header {
-    display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;
-  }
-  .debug-title {
-    font-size:11px; font-weight:600; letter-spacing:.06em;
-    text-transform:uppercase; color:#475569;
-  }
-  .debug-clear {
-    background:#1e293b; border:none; color:#64748b; font-size:11px;
-    padding:3px 8px; border-radius:6px; cursor:pointer; font-family:monospace;
-  }
-  .debug-clear:hover { color:#94a3b8; }
-  .debug-log {
-    max-height:180px; overflow-y:auto; display:flex;
-    flex-direction:column; gap:3px; margin-bottom:10px;
-  }
-  .debug-log::-webkit-scrollbar { width:4px; }
-  .debug-log::-webkit-scrollbar-track { background:transparent; }
-  .debug-log::-webkit-scrollbar-thumb { background:#1e293b; border-radius:2px; }
-  .debug-stats {
-    padding-top:10px; border-top:1px solid #1e293b;
-    display:flex; flex-wrap:wrap; gap:10px;
-  }
-  .debug-stat {
-    font-size:11px; color:#475569;
-  }
-  .debug-stat span { color:#f59e0b; }
-  .debug-stat span.ok { color:#4ade80; }
-  .debug-stat span.warn { color:#f59e0b; }
-
-  /* ── MOBILE ── */
+  /* ── MOBILE: ocultar historial lateral, mostrar abajo ── */
   @media (max-width: 991px) {
     .history-col { margin-top:0; }
   }
@@ -232,6 +201,7 @@
 
   <!-- ── COLUMNA IZQUIERDA ── -->
   <div class="col-lg-5 d-flex flex-column gap-4">
+
     <div style="background:white; border-radius:14px; border:1px solid #f1f5f9; padding:20px;">
 
       <div style="font-size:11px; font-weight:600; letter-spacing:.07em; text-transform:uppercase;
@@ -294,7 +264,6 @@
             El registro se hace automáticamente.
           </p>
         </div>
-
         <div class="scanner-input-wrap">
           <span class="scanner-hw-icon">
             <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -302,47 +271,12 @@
               <line x1="3" y1="14" x2="21" y2="14"/><line x1="3" y1="18" x2="21" y2="18"/>
             </svg>
           </span>
+          <!-- Este input captura lo que manda el escáner físico -->
           <input type="text" id="hw-scanner-input" class="scanner-hw-input"
                  placeholder="Esperando lectura del escáner..."
                  autocomplete="off" autocorrect="off" spellcheck="false">
         </div>
         <p class="scanner-hint">El campo se mantiene activo automáticamente</p>
-
-        <!-- ── DEBUG PANEL ── -->
-        <div class="debug-panel" id="debug-panel">
-          <div class="debug-header">
-            <span class="debug-title">🔍 Debug — Escáner USB/BT</span>
-            <button class="debug-clear" onclick="clearDebug()">limpiar</button>
-          </div>
-          <div class="debug-log" id="debug-log">
-            <span style="color:#334155;">Esperando actividad del escáner...</span>
-          </div>
-          <div class="debug-stats">
-            <div class="debug-stat">
-              Foco: <span id="dbg-focus" class="warn">sin foco</span>
-            </div>
-            <div class="debug-stat">
-              Último código: <span id="dbg-last">—</span>
-            </div>
-            <div class="debug-stat">
-              Chars: <span id="dbg-chars">0</span>
-            </div>
-            <div class="debug-stat">
-              Velocidad: <span id="dbg-speed">—</span>
-            </div>
-            <div class="debug-stat">
-              Último Enter: <span id="dbg-enter">—</span>
-            </div>
-            <div class="debug-stat">
-              Registros OK: <span id="dbg-ok" class="ok">0</span>
-            </div>
-            <div class="debug-stat">
-              Errores: <span id="dbg-err" style="color:#f87171;">0</span>
-            </div>
-          </div>
-        </div>
-        <!-- FIN DEBUG — borra el bloque .debug-panel cuando ya funcione -->
-
       </div>
 
       <!-- ── PANEL MANUAL ── -->
@@ -425,9 +359,9 @@ function addToHistory(data, origen = 'qr') {
 }
 
 function renderHistory() {
-  const list   = document.getElementById('history-list');
-  const empty  = document.getElementById('history-empty');
-  const badge  = document.getElementById('count-badge');
+  const list  = document.getElementById('history-list');
+  const empty = document.getElementById('history-empty');
+  const badge = document.getElementById('count-badge');
   const nuevos = scanned.filter(s => s.nuevo).length;
   badge.textContent = `${nuevos} presente${nuevos !== 1 ? 's' : ''}`;
   if (!scanned.length) { if (empty) empty.style.display = ''; return; }
@@ -440,9 +374,7 @@ function renderHistory() {
         <div style="font-weight:500; color:#1e293b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
           ${s.nombre}
         </div>
-        <div style="font-size:12px; color:#94a3b8;">
-          ${hoy} · ${s.origen === 'manual' ? 'Manual' : s.origen === 'scanner' ? 'Escáner' : 'QR'}
-        </div>
+        <div style="font-size:12px; color:#94a3b8;">${hoy} · ${s.origen === 'manual' ? 'Manual' : s.origen === 'scanner' ? 'Escáner' : 'QR'}</div>
       </div>
       <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
         <span style="font-size:12px; color:#94a3b8;">${s.hora}</span>
@@ -518,15 +450,20 @@ function setMode(mode) {
     document.getElementById(`panel-${m}`).style.display  = m === mode ? '' : 'none';
     document.getElementById(`tab-${m}`).classList.toggle('active', m === mode);
   });
+
+  // Detener cámara si no se usa
   if (mode !== 'camara' && camaraStream) {
     camaraStream.getTracks().forEach(t => t.stop());
     camaraStream = null;
   }
-  if (mode === 'camara')  iniciarCamara();
-  if (mode === 'scanner') setTimeout(() => { hwInput.focus(); dbgLog('Modo activado — input con foco', '#60a5fa'); }, 100);
+  if (mode === 'camara') iniciarCamara();
+  if (mode === 'scanner') {
+    // Auto-focus en el input del escáner físico
+    setTimeout(() => document.getElementById('hw-scanner-input').focus(), 100);
+  }
 }
 
-// ── CÁMARA ────────────────────────────────────────────
+// ── CÁMARA (con soporte móvil) ────────────────────────
 const video  = document.getElementById('scanner-video');
 const canvas = document.getElementById('scanner-canvas');
 const ctx    = canvas.getContext('2d');
@@ -536,18 +473,31 @@ let lastCode = null;
 
 function iniciarCamara() {
   if (camaraStream) return;
+
+  // facingMode: environment = cámara trasera en móvil
   const constraints = {
-    video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } }
+    video: {
+      facingMode: { ideal: 'environment' },
+      width:      { ideal: 1280 },
+      height:     { ideal: 720 },
+    }
   };
+
   navigator.mediaDevices.getUserMedia(constraints)
     .then(stream => {
-      camaraStream = stream; video.srcObject = stream; video.play();
+      camaraStream     = stream;
+      video.srcObject  = stream;
+      video.play();
       requestAnimationFrame(tick);
     })
-    .catch(() => {
+    .catch(err => {
+      console.warn('Cámara trasera no disponible, intentando frontal...', err);
+      // Fallback: cualquier cámara disponible
       navigator.mediaDevices.getUserMedia({ video: true })
         .then(stream => {
-          camaraStream = stream; video.srcObject = stream; video.play();
+          camaraStream     = stream;
+          video.srcObject  = stream;
+          video.play();
           requestAnimationFrame(tick);
         })
         .catch(() => {
@@ -560,16 +510,19 @@ function iniciarCamara() {
 function tick() {
   if (!camaraStream) return;
   if (video.readyState === video.HAVE_ENOUGH_DATA) {
-    canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+    canvas.width  = video.videoWidth;
+    canvas.height = video.videoHeight;
     ctx.drawImage(video, 0, 0);
     const img  = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const code = jsQR(img.data, img.width, img.height, { inversionAttempts: 'dontInvert' });
     if (code && !cooldown && code.data !== lastCode) {
-      lastCode = code.data; cooldown = true;
+      lastCode = code.data;
+      cooldown = true;
       status.textContent = 'Procesando...';
       registrar(code.data, 'qr').then(() => {
         setTimeout(() => {
-          cooldown = false; lastCode = null;
+          cooldown  = false;
+          lastCode  = null;
           status.textContent = 'Apunta la cámara al código QR';
         }, 3000);
       });
@@ -578,123 +531,51 @@ function tick() {
   requestAnimationFrame(tick);
 }
 
+// Iniciar cámara al cargar (modo por defecto)
 iniciarCamara();
 
-// ── ESCÁNER INALÁMBRICO (USB / BT) ────────────────────
+// ── ESCÁNER INALÁMBRICO (USB / Bluetooth) ─────────────
+// Los escáneres físicos actúan como teclado: envían el código y pulsan Enter.
+// Este input captura esa secuencia y la registra automáticamente.
 const hwInput = document.getElementById('hw-scanner-input');
-let hwBuffer      = '';
-let hwTimer       = null;
-let firstCharTime = null;
-let dbgOk         = 0;
-let dbgErr        = 0;
+let hwBuffer  = '';
+let hwTimer   = null;
 
-// ── DEBUG ──────────────────────────────────────────────
-function dbgLog(msg, color = '#94a3b8') {
-  const log = document.getElementById('debug-log');
-  if (!log) return;
-  const time = new Date().toLocaleTimeString('es-MX', { hour12: false });
-  const el   = document.createElement('div');
-  el.style.color   = color;
-  el.style.lineHeight = '1.5';
-  el.textContent   = `[${time}] ${msg}`;
-  if (log.children.length === 1 && log.children[0].textContent.includes('Esperando')) log.innerHTML = '';
-  log.prepend(el);
-  while (log.children.length > 60) log.removeChild(log.lastChild);
-}
-function clearDebug() {
-  const log = document.getElementById('debug-log');
-  if (log) log.innerHTML = '<span style="color:#334155;">Log limpiado.</span>';
-}
-
-// Foco / blur
-hwInput.addEventListener('focus', () => {
-  const el = document.getElementById('dbg-focus');
-  if (el) { el.textContent = 'activo ✓'; el.className = 'ok'; }
-  dbgLog('Input obtuvo foco ✓', '#4ade80');
-});
-hwInput.addEventListener('blur', () => {
-  const el = document.getElementById('dbg-focus');
-  if (el) { el.textContent = 'sin foco ⚠'; el.className = 'warn'; }
-  dbgLog('⚠ Input perdió foco — el escáner no puede escribir hasta hacer clic aquí', '#f59e0b');
+hwInput.addEventListener('input', () => {
+  // Acumular valor — el escáner escribe todo de golpe muy rápido
+  hwBuffer = hwInput.value.trim();
+  clearTimeout(hwTimer);
+  // Si el escáner mandó Enter ya lo manejamos abajo;
+  // aquí esperamos 80ms como seguridad para escáneres que no mandan Enter
+  hwTimer = setTimeout(() => {
+    if (hwBuffer) procesarHwScan(hwBuffer);
+  }, 80);
 });
 
-// Cada tecla — útil para ver si el escáner manda Enter, Tab, etc.
 hwInput.addEventListener('keydown', e => {
-  const keyLabel = e.key === ' ' ? 'SPACE' : e.key;
-  dbgLog(`keydown: "${keyLabel}" (code: ${e.code})`, e.key === 'Enter' ? '#60a5fa' : '#475569');
   if (e.key === 'Enter' && hwInput.value.trim()) {
     clearTimeout(hwTimer);
-    const enterTime = new Date().toLocaleTimeString('es-MX', { hour12:false });
-    const el = document.getElementById('dbg-enter');
-    if (el) el.textContent = enterTime;
     procesarHwScan(hwInput.value.trim());
   }
 });
 
-// Cada cambio en el input
-hwInput.addEventListener('input', () => {
-  const val = hwInput.value;
-  const now = Date.now();
-  if (!firstCharTime) firstCharTime = now;
-  const elapsed = now - firstCharTime;
-
-  const elChars = document.getElementById('dbg-chars');
-  if (elChars) elChars.textContent = val.length;
-  dbgLog(`input → "${val}" (${val.length} chars, +${elapsed}ms)`, '#c084fc');
-
-  hwBuffer = val.trim();
-  clearTimeout(hwTimer);
-  hwTimer = setTimeout(() => {
-    if (hwBuffer) {
-      const speed = firstCharTime ? `${val.length} chars en ${Date.now() - firstCharTime}ms` : '—';
-      const elSpeed = document.getElementById('dbg-speed');
-      const elLast  = document.getElementById('dbg-last');
-      if (elSpeed) elSpeed.textContent = speed;
-      if (elLast)  elLast.textContent  = hwBuffer.slice(0, 28) + (hwBuffer.length > 28 ? '…' : '');
-      dbgLog(`⏱ timeout 80ms → procesando: "${hwBuffer}" (${speed})`, '#34d399');
-      procesarHwScan(hwBuffer);
-    }
-  }, 80);
-});
-
 function procesarHwScan(codigo) {
-  // Limpiar caracteres basura que algunos escáneres añaden
-  const codigoLimpio = codigo.replace(/[\r\n\t]/g, '').trim();
-
-  if (codigoLimpio !== codigo) {
-    dbgLog(`⚠ Se eliminaron chars especiales: "${codigo}" → "${codigoLimpio}"`, '#f59e0b');
-  }
-
-  dbgLog(`→ enviando a BD: "${codigoLimpio}"`, '#60a5fa');
-
   hwInput.value = '';
   hwBuffer      = '';
-  firstCharTime = null;
   hwInput.classList.add('pulse');
   setTimeout(() => hwInput.classList.remove('pulse'), 600);
 
-  registrar(codigoLimpio, 'scanner').then(data => {
-    if (data) {
-      dbgOk++;
-      const el = document.getElementById('dbg-ok');
-      if (el) el.textContent = dbgOk;
-      dbgLog(`✓ OK: ${data.nuevo ? 'NUEVO' : 'YA PRESENTE'} — ${data.nombre} (${data.hora})`, '#4ade80');
-    } else {
-      dbgErr++;
-      const el = document.getElementById('dbg-err');
-      if (el) el.textContent = dbgErr;
-      dbgLog(`✗ Error: código no reconocido en BD`, '#f87171');
-    }
+  registrar(codigo, 'scanner').then(() => {
+    // Devolver foco al input para siguiente lectura
     setTimeout(() => hwInput.focus(), 200);
   });
 }
 
-// Mantener foco en el input del escáner cuando el panel está activo
+// Mantener el foco en el input del escáner si el modo está activo
 document.addEventListener('click', e => {
   const panel = document.getElementById('panel-scanner');
   if (panel && panel.style.display !== 'none') {
-    if (!document.getElementById('search-wrap')?.contains(e.target) &&
-        !document.getElementById('debug-panel')?.contains(e.target)) {
+    if (!document.getElementById('search-wrap')?.contains(e.target)) {
       hwInput.focus();
     }
   }

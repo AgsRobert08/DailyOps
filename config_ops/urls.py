@@ -23,5 +23,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("", include("company.urls", namespace="company")),
     path("cursos/", include("cursos.urls", namespace="cursos")),
+    path("whatsapp/", include("whatsapp.urls", namespace="whatsapp")),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

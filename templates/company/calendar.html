@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+{% block title %}Calendario{% endblock %}
+{% block page_title %}Calendario{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css" rel="stylesheet">
+<style>
+  .fc { font-family: 'Plus Jakarta Sans', sans-serif; }
+  .fc-button-primary {
+    background: var(--color-primary) !important;
+    border-color: var(--color-primary) !important;
+  }
+  .fc-button-primary:hover {
+    opacity: .85 !important;
+  }
+  .fc-today-button { opacity: .7 !important; }
+  .fc-daygrid-event { border-radius: 6px !important; font-size: 12px !important; }
+  .fc-event { cursor: pointer; }
+
+  /* Modal */
+  .modal-header { background: var(--color-primary); color: white; border-radius: 12px 12px 0 0; }
+  .modal-header .btn-close { filter: invert(1); }
+  .modal-content { border-radius: 12px; border: none; box-shadow: 0 20px 60px rgba(0,0,0,.15); }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Barra superior con info y botón desconectar -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <div>
+    <h5 class="mb-0 fw-600" style="color: var(--color-primary);">
+      📅 Mi Calendario
+    </h5>
+    <small class="text-muted">Sincronizado con Google Calendar</small>
+  </div>
+  <a href="{% url 'company:calendar_disconnect' %}"
+     class="btn btn-sm btn-outline-danger"
+     onclick="return confirm('¿Desconectar Google Calendar?')">
+    <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="me-1">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+      <polyline points="16 17 21 12 16 7"/>
+      <line x1="21" y1="12" x2="9" y2="12"/>
+    </svg>
+    Desconectar
+  </a>
+</div>
+<div class="card border-0 shadow-sm" style="border-radius:16px;">
+  <div class="card-body p-4">
+    <div id="calendar"></div>
+  </div>
+</div>
+
+<!-- Modal Crear/Editar -->
+<div class="modal fade" id="eventModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-600" id="modalTitle">Nuevo evento</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <input type="hidden" id="eventId">
+        <div class="mb-3">
+          <label class="form-label fw-500">Título *</label>
+          <input type="text" id="eventTitle" class="form-control" placeholder="Nombre del evento">
+        </div>
+        <div class="row g-3 mb-3">
+          <div class="col-6">
+            <label class="form-label fw-500">Inicio *</label>
+            <input type="datetime-local" id="eventStart" class="form-control">
+          </div>
+          <div class="col-6">
+            <label class="form-label fw-500">Fin *</label>
+            <input type="datetime-local" id="eventEnd" class="form-control">
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-500">Descripción</label>
+          <textarea id="eventDesc" class="form-control" rows="2" placeholder="Detalles del evento..."></textarea>
+        </div>
+        <div class="mb-3">
+          <label class="form-label fw-500">Lugar</label>
+          <input type="text" id="eventLocation" class="form-control" placeholder="Dirección o lugar">
+        </div>
+      </div>
+      <div class="modal-footer border-0 pt-0 px-4 pb-4 gap-2">
+        <button id="btnDelete" class="btn btn-outline-danger me-auto d-none">
+          <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" class="me-1">
+            <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
+          </svg>
+          Eliminar
+        </button>
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancelar</button>
+        <button id="btnSave" class="btn btn-primary px-4" style="background:var(--color-primary);border-color:var(--color-primary);">
+          Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+<script>
+const CSRF = "{{ csrf_token }}";
+const URLS = {
+  events:  "{% url 'company:calendar_events_api' %}",
+  create:  "{% url 'company:calendar_event_create' %}",
+  update:  (id) => `/calendar/api/events/${id}/update/`,
+  delete:  (id) => `/calendar/api/events/${id}/delete/`,
+};
+
+const modal     = new bootstrap.Modal(document.getElementById("eventModal"));
+const modalEl   = document.getElementById("eventModal");
+
+let calendar;
+
+function toLocal(isoString) {
+  if (!isoString) return "";
+  return isoString.slice(0, 16); // "YYYY-MM-DDTHH:MM"
+}
+
+function toISO(localStr) {
+  return new Date(localStr).toISOString();
+}
+
+function openModal({ id = "", title = "", start = "", end = "", description = "", location = "" } = {}) {
+  document.getElementById("eventId").value       = id;
+  document.getElementById("eventTitle").value    = title;
+  document.getElementById("eventStart").value    = toLocal(start);
+  document.getElementById("eventEnd").value      = toLocal(end);
+  document.getElementById("eventDesc").value     = description;
+  document.getElementById("eventLocation").value = location;
+  document.getElementById("modalTitle").textContent = id ? "Editar evento" : "Nuevo evento";
+  document.getElementById("btnDelete").classList.toggle("d-none", !id);
+  modal.show();
+}
+
+document.getElementById("btnSave").addEventListener("click", async () => {
+  const id    = document.getElementById("eventId").value;
+  const title = document.getElementById("eventTitle").value.trim();
+  const start = document.getElementById("eventStart").value;
+  const end   = document.getElementById("eventEnd").value;
+
+  if (!title || !start || !end) {
+    alert("Título, inicio y fin son obligatorios.");
+    return;
+  }
+
+  const body = JSON.stringify({
+    title,
+    start:       toISO(start),
+    end:         toISO(end),
+    description: document.getElementById("eventDesc").value,
+    location:    document.getElementById("eventLocation").value,
+  });
+
+  const url    = id ? URLS.update(id) : URLS.create;
+  const method = id ? "PUT" : "POST";
+
+  const res = await fetch(url, {
+    method,
+    headers: { "Content-Type": "application/json", "X-CSRFToken": CSRF },
+    body,
+  });
+
+  if (res.ok) {
+    modal.hide();
+    calendar.refetchEvents();
+  } else {
+    alert("Error al guardar el evento.");
+  }
+});
+
+document.getElementById("btnDelete").addEventListener("click", async () => {
+  const id = document.getElementById("eventId").value;
+  if (!id || !confirm("¿Eliminar este evento?")) return;
+
+  const res = await fetch(URLS.delete(id), {
+    method: "DELETE",
+    headers: { "X-CSRFToken": CSRF },
+  });
+
+  if (res.ok) {
+    modal.hide();
+    calendar.refetchEvents();
+  }
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+  const el = document.getElementById("calendar");
+
+  calendar = new FullCalendar.Calendar(el, {
+    initialView:  "dayGridMonth",
+    locale:       "es",
+    height:       "auto",
+    headerToolbar: {
+      left:   "prev,next today",
+      center: "title",
+      right:  "dayGridMonth,timeGridWeek,timeGridDay,listWeek",
+    },
+    buttonText: {
+      today:    "Hoy",
+      month:    "Mes",
+      week:     "Semana",
+      day:      "Día",
+      list:     "Lista",
+    },
+    events: async (info, successCb, failureCb) => {
+      try {
+        const res  = await fetch(`${URLS.events}?start=${info.startStr}&end=${info.endStr}`);
+        const data = await res.json();
+        successCb(data.events);
+      } catch (e) {
+        failureCb(e);
+      }
+    },
+
+    // Clic en evento → abrir modal editar
+    eventClick: ({ event }) => {
+      openModal({
+        id:          event.id,
+        title:       event.title,
+        start:       event.startStr,
+        end:         event.endStr,
+        description: event.extendedProps.description,
+        location:    event.extendedProps.location,
+      });
+    },
+
+    // Clic en día vacío → abrir modal crear
+    dateClick: ({ dateStr }) => {
+      const start = dateStr.length === 10
+        ? dateStr + "T09:00"
+        : dateStr;
+      const end = dateStr.length === 10
+        ? dateStr + "T10:00"
+        : dateStr;
+      openModal({ start, end });
+    },
+
+    // Drag & drop para mover eventos
+    editable: true,
+    eventDrop: async ({ event, revert }) => {
+      const res = await fetch(URLS.update(event.id), {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", "X-CSRFToken": CSRF },
+        body: JSON.stringify({
+          title: event.title,
+          start: event.startStr,
+          end:   event.endStr || event.startStr,
+          description: event.extendedProps.description || "",
+          location:    event.extendedProps.location    || "",
+        }),
+      });
+      if (!res.ok) revert();
+    },
+  });
+
+  calendar.render();
+});
+</script>
+{% endblock %}

@@ -19,6 +19,9 @@ urlpatterns = [
     path("asistencia/pdf/",                  views.asistencia_pdf,       name="asistencia_pdf"),
     path("asistencia/<int:pk>/eliminar/",    views.asistencia_delete,    name="asistencia_delete"),
 
+    path("inscripciones/excel/", views.inscripciones_excel, name="inscripciones_excel"),
+    path("asistencia/excel/",    views.asistencia_excel,    name="asistencia_excel"),
+
     # AJAX búsqueda
     path("buscar/",                          views.buscar_inscrito,      name="buscar_inscrito"),
     # WhatsApp

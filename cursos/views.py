@@ -505,3 +505,145 @@ def whatsapp_enviar(request):
 
     # GET — modal no necesita vista propia, redirige al historial
     return redirect("cursos:whatsapp_historial")
+
+    # ── EXCEL ─────────────────────────────────────────────
+
+@login_required
+def inscripciones_excel(request):
+    try:
+        from openpyxl import Workbook
+        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+        from openpyxl.utils import get_column_letter
+    except ImportError:
+        return HttpResponse("Instala openpyxl: pip install openpyxl", status=500)
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Inscritos"
+
+    # Estilos
+    header_font    = Font(name="Arial", bold=True, color="FFFFFF", size=10)
+    header_fill    = PatternFill("solid", start_color="303854", end_color="303854")
+    header_align   = Alignment(horizontal="center", vertical="center")
+    cell_font      = Font(name="Arial", size=10)
+    cell_align_l   = Alignment(horizontal="left",   vertical="center")
+    cell_align_c   = Alignment(horizontal="center", vertical="center")
+    alt_fill       = PatternFill("solid", start_color="F8FAFC", end_color="F8FAFC")
+    thin           = Side(style="thin", color="E2E8F0")
+    border         = Border(left=thin, right=thin, top=thin, bottom=thin)
+
+    headers = ["#", "Nombre", "Género", "Teléfono", "Correo electrónico"]
+    col_widths = [5, 35, 14, 18, 35]
+
+    for col, (h, w) in enumerate(zip(headers, col_widths), start=1):
+        cell = ws.cell(row=1, column=col, value=h)
+        cell.font      = header_font
+        cell.fill      = header_fill
+        cell.alignment = header_align
+        cell.border    = border
+        ws.column_dimensions[get_column_letter(col)].width = w
+
+    ws.row_dimensions[1].height = 20
+
+    for i, inscrito in enumerate(get_inscritos_filtrados(request), start=1):
+        row  = i + 1
+        fill = alt_fill if i % 2 == 0 else None
+        data = [i, inscrito.nombre, inscrito.get_genero_display(),
+                inscrito.telefono, inscrito.correo_electronico or "—"]
+
+        for col, value in enumerate(data, start=1):
+            cell = ws.cell(row=row, column=col, value=value)
+            cell.font   = cell_font
+            cell.border = border
+            cell.alignment = cell_align_c if col in (1,) else cell_align_l
+            if fill:
+                cell.fill = fill
+
+    # Fila de totales
+    total_row = ws.max_row + 2
+    cell = ws.cell(row=total_row, column=1, value=f"Total inscritos: {ws.max_row - 1}")
+    cell.font = Font(name="Arial", bold=True, size=10)
+
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = 'attachment; filename="Lista_Inscritos.xlsx"'
+    wb.save(response)
+    return response
+
+
+@login_required
+def asistencia_excel(request):
+    try:
+        from openpyxl import Workbook
+        from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+        from openpyxl.utils import get_column_letter
+    except ImportError:
+        return HttpResponse("Instala openpyxl: pip install openpyxl", status=500)
+
+    ahora  = hora_local()
+    fecha  = request.GET.get("fecha", ahora.date().isoformat())
+    genero = request.GET.get("genero", "")
+
+    asistencias = Asistencia.objects.filter(fecha=fecha).select_related("inscrito")
+    if genero:
+        asistencias = asistencias.filter(inscrito__genero=genero)
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = f"Asistencia {fecha}"
+
+    # Estilos (idénticos al de inscritos)
+    header_font  = Font(name="Arial", bold=True, color="FFFFFF", size=10)
+    header_fill  = PatternFill("solid", start_color="303854", end_color="303854")
+    header_align = Alignment(horizontal="center", vertical="center")
+    cell_font    = Font(name="Arial", size=10)
+    cell_align_l = Alignment(horizontal="left",   vertical="center")
+    cell_align_c = Alignment(horizontal="center", vertical="center")
+    alt_fill     = PatternFill("solid", start_color="F8FAFC", end_color="F8FAFC")
+    thin         = Side(style="thin", color="E2E8F0")
+    border       = Border(left=thin, right=thin, top=thin, bottom=thin)
+
+    headers    = ["#", "Nombre", "Género", "Teléfono", "Correo electrónico", "Hora"]
+    col_widths = [5, 35, 14, 18, 35, 10]
+
+    for col, (h, w) in enumerate(zip(headers, col_widths), start=1):
+        cell = ws.cell(row=1, column=col, value=h)
+        cell.font      = header_font
+        cell.fill      = header_fill
+        cell.alignment = header_align
+        cell.border    = border
+        ws.column_dimensions[get_column_letter(col)].width = w
+
+    ws.row_dimensions[1].height = 20
+
+    for i, a in enumerate(asistencias, start=1):
+        row  = i + 1
+        fill = alt_fill if i % 2 == 0 else None
+        data = [
+            i,
+            a.inscrito.nombre,
+            a.inscrito.get_genero_display(),
+            a.inscrito.telefono,
+            a.inscrito.correo_electronico or "—",
+            a.hora.strftime("%H:%M"),
+        ]
+
+        for col, value in enumerate(data, start=1):
+            cell = ws.cell(row=row, column=col, value=value)
+            cell.font      = cell_font
+            cell.border    = border
+            cell.alignment = cell_align_c if col in (1, 6) else cell_align_l
+            if fill:
+                cell.fill = fill
+
+    total_row = ws.max_row + 2
+    cell = ws.cell(row=total_row, column=1, value=f"Total presentes: {ws.max_row - 1}")
+    cell.font = Font(name="Arial", bold=True, size=10)
+
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = f'attachment; filename="Asistencia_{fecha}.xlsx"'
+    wb.save(response)
+    return response
