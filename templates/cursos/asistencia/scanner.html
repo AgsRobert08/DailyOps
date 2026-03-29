@@ -659,7 +659,7 @@ hwInput.addEventListener('input', () => {
 
 function procesarHwScan(codigo) {
   // Limpiar caracteres basura que algunos escáneres añaden
-  const codigoLimpio = codigo.replace(/[\r\n\t]/g, '').trim();
+  const codigoLimpio = codigo.replace(/[\r\n\t]/g, '').replace(/'/g, '-').trim();
 
   if (codigoLimpio !== codigo) {
     dbgLog(`⚠ Se eliminaron chars especiales: "${codigo}" → "${codigoLimpio}"`, '#f59e0b');

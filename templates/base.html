@@ -349,10 +349,9 @@
       <span class="nav-chevron"><svg width="13" height="13" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></span>
       <span class="nav-tooltip">Asistencia</span>
     </a>
-
+    {% if not request.user.is_operador %}
 <span class="nav-label">Herramientas</span>
 
-    {% if not request.user.is_operador %}
     <a href="{% url 'whatsapp:inbox' %}"
        class="nav-item {% if request.resolver_match.namespace == 'whatsapp' or 'whatsapp' in request.resolver_match.url_name %}active{% endif %}">
       <span class="nav-icon">

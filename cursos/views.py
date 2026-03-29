@@ -260,7 +260,7 @@ def asistencia_registrar(request):
 
     try:
         body   = json.loads(request.body)
-        codigo = body.get("codigo", "").strip().strip('"').strip("'")
+        codigo = body.get("codigo", "").strip().replace('\r','').replace('\n','').replace('\t','').replace("'", "-")
     except Exception:
         return JsonResponse({"ok": False, "error": "JSON invalido"}, status=400)
 
