@@ -27,16 +27,23 @@ def hora_local():
 
 # ── INSCRIPCIONES ─────────────────────────────────────
 
+from django.core.paginator import Paginator
+
 @login_required
 def inscripciones_list(request):
     inscritos = get_inscritos_filtrados(request)
+    paginator = Paginator(inscritos, 30)
+    page      = request.GET.get('page', 1)
+    inscritos_page = paginator.get_page(page)
+
     return render(request, "cursos/inscripciones/list.html", {
-        "inscritos":  inscritos,
-        "total":      inscritos.count(),
+        "inscritos":  inscritos_page,
+        "total":      paginator.count,
         "zonas":      Inscrito.ZONAS,
         "zona_sel":   request.GET.get('zona', ''),
         "genero_sel": request.GET.get('genero', ''),
         "q":          request.GET.get('q', ''),
+        "page_obj":   inscritos_page,
     })
 
 
@@ -231,20 +238,29 @@ def inscripciones_pdf(request):
 
 # ── ASISTENCIA ────────────────────────────────────────
 
+from django.core.paginator import Paginator
+
 @login_required
 def asistencia_list(request):
     ahora  = hora_local()
     fecha  = request.GET.get("fecha", ahora.date().isoformat())
     genero = request.GET.get("genero", "")
+
     asistencias = Asistencia.objects.filter(fecha=fecha).select_related("inscrito")
     if genero:
         asistencias = asistencias.filter(inscrito__genero=genero)
+
+    paginator      = Paginator(asistencias, 30)
+    page           = request.GET.get('page', 1)
+    asistencias_page = paginator.get_page(page)
+
     return render(request, "cursos/asistencia/list.html", {
-        "asistencias":     asistencias,
+        "asistencias":     asistencias_page,
         "fecha":           fecha,
         "genero_sel":      genero,
-        "total_presentes": asistencias.count(),
+        "total_presentes": paginator.count,
         "total_inscritos": Inscrito.objects.count(),
+        "page_obj":        asistencias_page,
     })
 
 

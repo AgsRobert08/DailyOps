@@ -83,7 +83,7 @@ Saludos,
                 </tr>
                 <tr>
                   <td style="padding:14px 20px; border-bottom:1px solid #f1f5f9;">
-                    <span style="font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:.06em;">Correo</span><br>
+                    <span style="font-size:11px; font-weight:600; color:#94a3b8; text-transform:uppercase; letter-spacing:.06em;">Teléfono</span><br>
                     <span style="font-size:14px; color:#475569;">{inscrito.telefono or '—'}</span>
                   </td>
                 </tr>
