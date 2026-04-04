@@ -44,7 +44,7 @@ class Inscrito(models.Model):
     iglesia           = models.CharField(max_length=150, null=True, blank=True)
     pastor            = models.CharField(max_length=150, null=True, blank=True)
 
-    telefono           = models.CharField(max_length=20, unique=True)
+    telefono           = models.CharField(max_length=20, null=True, blank=True)
     correo_electronico = models.EmailField(null=True, blank=True)
 
     GRADOS = [
